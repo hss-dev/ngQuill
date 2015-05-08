@@ -197,8 +197,13 @@
 
                     $scope.regEx = /^([2-9]|[1-9][0-9]+)$/;
 
+                    editor.on('selection-change', function(range, source) {
+                        $scope.$emit('selection-change', {range:range,source:source});   
+                    });    
+
                     // Update model on textchange
-                    editor.on('text-change', function () {
+                    editor.on('text-change', function(delta, source) {
+                        $scope.$emit('text-change', {delta:delta,source:source});   
                         var oldChange = changed;
                         changed = true;
                         $timeout(function () {
