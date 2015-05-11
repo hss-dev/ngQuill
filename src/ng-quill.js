@@ -84,7 +84,8 @@
                     'required': '@?editorRequired',
                     'readOnly': '@?',
                     'errorClass': '@?',
-                    'ngModel': '='
+                    'ngModel': '=',
+                    'websocket': "="
                 },
                 require: 'ngModel',
                 restrict: 'E',
