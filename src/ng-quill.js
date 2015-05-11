@@ -219,14 +219,14 @@
                             if ($scope.websocket && source === 'user') {
                                 delta.ops.forEach(function(entry) {
                                     var textUpdate = $scope.convertOperation(entry);
-                                    $iscope.websocket.$$send(JSON.stringify(update));
+                                    $scope.websocket.send(JSON.stringify(update)); 
                                 });
                             }
                         }, 0);
                     });
 
                     if ($scope.websocket) {
-                        $scope.websocket.$on('$message', function(data) {
+                        $scope.websocket.onMessage(function(data) {
                             var textUpdate = JSON.parse(data);
 
                             switch (textUpdate.action) {
@@ -248,13 +248,13 @@
                             }
                         });
 
-                        $scope.websocket.onclose = function() {
+                        $scope.websocket.onClose = function() {
                             $log.error("quill websocket is closed");
                         };
 
-                        $scope.websocket.onerror = function(error) {
+                        $scope.websocket.onError = function(error) {
                             $log.error("quill websocket error");
-                            $log.error(error.data);
+                            $log.error(error);
                         };
 
                         $scope.$on('selection-change', function(range, source) {
@@ -273,7 +273,7 @@
                                         selNumChars: range.end
                                     };
                                 }
-                                scope.websocket.$$send(JSON.stringify(update));
+                                scope.websocket.send(JSON.stringify(update));
                             }
 
                         });
