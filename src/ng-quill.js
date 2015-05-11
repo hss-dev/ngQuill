@@ -217,7 +217,7 @@
                             // Send to ws
                             if ($scope.websocket && source === 'user') {
                                 delta.ops.forEach(function(entry) {
-                                    var textUpdate = convertOperation(entry);
+                                    var textUpdate = $scope.convertOperation(entry);
                                     $iscope.websocket.$$send(JSON.stringify(update));
                                 });
                             }
