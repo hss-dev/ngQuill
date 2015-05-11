@@ -219,7 +219,7 @@
                             if ($scope.websocket && source === 'user') {
                                 delta.ops.forEach(function(entry) {
                                     var textUpdate = $scope.convertOperation(entry);
-                                    $scope.websocket.send(JSON.stringify(update)); 
+                                    $scope.websocket.send(JSON.stringify(textUpdate)); 
                                 });
                             }
                         }, 0);
