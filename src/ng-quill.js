@@ -257,6 +257,9 @@
                             }
                         });
 
+
+                        editor.focus();
+
                         $rootScope.quillws.onClose = function() {
                             $log.error("quill websocket is closed");
                         };
@@ -266,23 +269,30 @@
                             $log.error(error);
                         });
 
-                        $scope.$on('selection-change', function(event, data) {
-                            if (data.source === 'user' && data.range) {
+                        editor.on('selection-change', function(range, source) {
+                            if (source === 'user') {
                                 var update;
 
-                                if (data.range.start === data.range.end) {
-                                    update = {
-                                        action: "CARETMOVED",
-                                        start: range.start
-                                    };
+                                if (range) {
+                                    if (range.start === range.end) {
+                                        update = {
+                                            action: "CARETMOVED",
+                                            start: range.start
+                                        };
+                                    } else {
+                                        update = {
+                                            action: "HIGHLIGHT",
+                                            selStart: range.start,
+                                            selNumChars: range.end
+                                        };
+                                    }
                                 } else {
                                     update = {
-                                        action: "HIGHLIGHT",
-                                        selStart: range.start,
-                                        selNumChars: range.end
+                                        action: "SYNC",
+                                        text: editor.getText()
                                     };
                                 }
-                                $$rootScope.quillws.send(JSON.stringify(update));
+                                $rootScope.quillws.send(JSON.stringify(update));
                             }
 
                         });
