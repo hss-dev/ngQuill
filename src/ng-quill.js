@@ -257,9 +257,6 @@
                             }
                         });
 
-
-                        editor.focus();
-
                         $rootScope.quillws.onClose = function() {
                             $log.error("quill websocket is closed");
                         };
