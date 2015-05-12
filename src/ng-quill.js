@@ -72,7 +72,10 @@
     app.directive("ngQuillEditor", [
         '$timeout',
         'ngQuillService',
-        function($timeout, ngQuillService) {
+        '$websocket',
+        '$rootScope',
+        '$location',
+        function($timeout, ngQuillService, $websocket, $rootScope, $location) {
             return {
                 scope: {
                     'toolbarEntries': '@?',
@@ -84,8 +87,7 @@
                     'required': '@?editorRequired',
                     'readOnly': '@?',
                     'errorClass': '@?',
-                    'ngModel': '=',
-                    'websocket': "="
+                    'ngModel': '='
                 },
                 require: 'ngModel',
                 restrict: 'E',
@@ -209,18 +211,32 @@
                             }
 
                             // Send to ws
-                            if ($scope.websocket && source === 'user') {
+                            if (attr.wsaddress && source === 'user') {
                                 delta.ops.forEach(function(entry) {
                                     var textUpdate = $scope.convertOperation(entry);
-                                    $scope.websocket.send(JSON.stringify(textUpdate)); 
+                                    $rootScope.quillws.send(JSON.stringify(textUpdate));
                                 });
                             }
                         }, 0);
                     });
 
-                    if ($scope.websocket) {
-                        $scope.websocket.onMessage(function(data) {
-                            var textUpdate = JSON.parse(data);
+                    if (attr.wsaddress) {
+                        try {
+                            if (!$rootScope.quillws) {
+                                if ($location.protocol() === 'http') {
+                                    //                                $rootScope.quillws = $websocket('ws://192.168.44.30:8089');
+                                    $rootScope.quillws = $websocket('ws://' + attr.wsaddress);
+                                } else {
+                                    $rootScope.quillws = $websocket('wss://' + attr.wsaddress);
+                                }
+
+                            }
+                        } catch (ohwell) {
+                            $log.error("Quill websocket has not connected");
+                            $log.error(ohwell);
+                        }
+                        $rootScope.quillws.onMessage(function(message) {
+                            var textUpdate = JSON.parse(message.data);
 
                             switch (textUpdate.action) {
                                 case "INSERT":
@@ -241,14 +257,14 @@
                             }
                         });
 
-                        $scope.websocket.onClose = function() {
+                        $rootScope.quillws.onClose = function() {
                             $log.error("quill websocket is closed");
                         };
 
-                        $scope.websocket.onError = function(error) {
+                        $rootScope.quillws.onError(function(message) {
                             $log.error("quill websocket error");
                             $log.error(error);
-                        };
+                        });
 
                         $scope.$on('selection-change', function(event, data) {
                             if (data.source === 'user' && data.range) {
@@ -266,7 +282,7 @@
                                         selNumChars: range.end
                                     };
                                 }
-                                $scope.websocket.send(JSON.stringify(update));
+                                $$rootScope.quillws.send(JSON.stringify(update));
                             }
 
                         });
