@@ -75,7 +75,8 @@
         '$websocket',
         '$rootScope',
         '$location',
-        function($timeout, ngQuillService, $websocket, $rootScope, $location) {
+        '$log',
+        function($timeout, ngQuillService, $websocket, $rootScope, $location, $log) {
             return {
                 scope: {
                     'toolbarEntries': '@?',
@@ -181,7 +182,7 @@
                     $scope.$watch(function() {
                         return $scope.ngModel;
                     }, function(newText) {
-                        if (newText !== undefined && !changed) {
+                        if (typeof newText === 'string' && !changed) {
                             // Set initial value;
                             editor.setHTML(newText);
                         }
