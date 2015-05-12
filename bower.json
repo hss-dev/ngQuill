@@ -1,6 +1,6 @@
 {
   "name": "ngQuill",
-  "version": "1.0.7.9",
+  "version": "1.0.7.10",
   "main": ["src/ng-quill.min.js"],
   "ignore": [
     "bower_components",
