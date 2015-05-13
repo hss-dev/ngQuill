@@ -259,16 +259,19 @@
                                     break;
                             }
                         });
+                        $rootScope.$watch('talkOff', function(newValue, oldValue) {
+                                if (newValue !== $scope.talkOff){
+                                    $scope.talkOff = newValue;
+                                }
+                        });
                         $scope.talkToggle = function() {
                             var update = {
                                 action: "MICOFF"
                             };
                             if ($rootScope.talkOff) {
-                                $scope.talkOff = false;
                                 $rootScope.talkOff = false;
                                 update.action = "MICON";
                             } else {
-                                $scope.talkOff = true;
                                 $rootScope.talkOff = true;
                             }
                             $rootScope.quillws.send(JSON.stringify(update));
@@ -280,7 +283,7 @@
 
                         $rootScope.quillws.onError(function(message) {
                             $log.error("quill websocket error");
-                            $log.error(error);
+                            $log.error(message);
                         });
 
                         editor.on('selection-change', function(range, source) {
