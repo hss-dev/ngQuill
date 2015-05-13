@@ -232,7 +232,6 @@
                                 }
 
                             }
-                            $rootScope.talkOff = false;
                         } catch (ohwell) {
                             $rootScope.talkOff = true;
                             $log.error("Quill websocket has not connected");
@@ -260,9 +259,9 @@
                             }
                         });
                         $rootScope.$watch('talkOff', function(newValue, oldValue) {
-                                if (newValue !== $scope.talkOff){
-                                    $scope.talkOff = newValue;
-                                }
+                            if (newValue !== $scope.talkOff) {
+                                $scope.talkOff = newValue;
+                            }
                         });
                         $scope.talkToggle = function() {
                             var update = {
