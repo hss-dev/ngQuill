@@ -3,8 +3,8 @@
     'use strict';
     var app;
     // declare ngQuill module
-    app = angular.module("ngQuill", []);
-
+    app = angular.module("ngQuill", ['angular-websocket']);
+        
     app.service('ngQuillService', function() {
         // formats list
         this.formats = [
@@ -162,6 +162,7 @@
 
                     // init editor
                     editor = new Quill(element[0].querySelector('.advanced-wrapper .editor-container'), config);
+                    editor.focus();
 
                     // add toolbar afterwards with a timeout to be sure that translations has replaced.
                     if ($scope.toolbar && $scope.toolbar === 'true') {
