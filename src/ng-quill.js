@@ -4,10 +4,11 @@
     var app;
     // declare ngQuill module
     app = angular.module("ngQuill", ['angular-websocket']);
-        
+
     app.service('ngQuillService', function() {
         // extra websocket commands    
-        this.socketCommands = {};    
+        this.socketCommands = {};
+        this.lastEditorID = -1;
         // formats list
         this.formats = [
             'link',
@@ -91,7 +92,6 @@
                     'readOnly': '@?',
                     'errorClass': '@?',
                     'ngModel': '=',
-                    'socketCommands': '@?',
                 },
                 require: 'ngModel',
                 restrict: 'E',
@@ -122,6 +122,9 @@
                                 }
                             }
                         };
+
+
+                    ngQuillService.lastEditorID = attr.editorid;
 
                     // set required flag (if text editor is required)
                     if ($scope.required && $scope.required === 'true') {
@@ -196,6 +199,7 @@
 
                     // Update model on textchange
                     editor.on('text-change', function(delta, source) {
+                        ngQuillService.lastEditorID = attr.editorid;
                         $scope.$emit('text-change', {
                             delta: delta,
                             source: source
@@ -242,31 +246,33 @@
                             $log.error(ohwell);
                         }
                         $rootScope.quillws.onMessage(function(message) {
-                            var textUpdate = JSON.parse(message.data);
+                            if (ngQuillService.lastEditorID === attr.editorid) {
+                                var textUpdate = JSON.parse(message.data);
 
-                            switch (textUpdate.action) {
-                                case "INSERT":
-                                    editor.insertText(textUpdate.start, textUpdate.text);
-                                    break;
-                                case "DELETE":
-                                    editor.deleteText(textUpdate.start, textUpdate.start + textUpdate.numChars);
-                                    break;
-                                case "HIGHLIGHT":
-                                    editor.setSelection(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars);
-                                    break;
-                                case "CARETMOVED":
-                                    editor.setSelection(textUpdate.start, textUpdate.start);
-                                    break;
-                                default:
-                                    if (ngQuillService.socketCommands){
-                                        var func = ngQuillService.socketCommands[textUpdate.action];
-                                        if (func){
-                                            func();
-                                            break;
+                                switch (textUpdate.action) {
+                                    case "INSERT":
+                                        editor.insertText(textUpdate.start, textUpdate.text);
+                                        break;
+                                    case "DELETE":
+                                        editor.deleteText(textUpdate.start, textUpdate.start + textUpdate.numChars);
+                                        break;
+                                    case "HIGHLIGHT":
+                                        editor.setSelection(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars);
+                                        break;
+                                    case "CARETMOVED":
+                                        editor.setSelection(textUpdate.start, textUpdate.start);
+                                        break;
+                                    default:
+                                        if (ngQuillService.socketCommands) {
+                                            var func = ngQuillService.socketCommands[textUpdate.action];
+                                            if (func) {
+                                                func();
+                                                break;
+                                            }
                                         }
-                                    }     
-                                    $log.error("Unknown action in text update: " + textUpdate.action);
-                                    break;
+                                        $log.error("Unknown action in text update: " + textUpdate.action);
+                                        break;
+                                }
                             }
                         });
                         $rootScope.$watch('talkOff', function(newValue, oldValue) {
@@ -297,6 +303,7 @@
                         });
 
                         editor.on('selection-change', function(range, source) {
+                            ngQuillService.lastEditorID = attr.editorid;
                             if (source === 'user') {
                                 var update;
 
