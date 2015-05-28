@@ -6,6 +6,8 @@
     app = angular.module("ngQuill", ['angular-websocket']);
         
     app.service('ngQuillService', function() {
+        // extra websocket commands    
+        this.socketCommands = {};    
         // formats list
         this.formats = [
             'link',
@@ -88,7 +90,8 @@
                     'required': '@?editorRequired',
                     'readOnly': '@?',
                     'errorClass': '@?',
-                    'ngModel': '='
+                    'ngModel': '=',
+                    'socketCommands': '@?',
                 },
                 require: 'ngModel',
                 restrict: 'E',
@@ -255,6 +258,13 @@
                                     editor.setSelection(textUpdate.start, textUpdate.start);
                                     break;
                                 default:
+                                    if (ngQuillService.socketCommands){
+                                        var func = ngQuillService.socketCommands[textUpdate.action];
+                                        if (func){
+                                            func();
+                                            break;
+                                        }
+                                    }     
                                     $log.error("Unknown action in text update: " + textUpdate.action);
                                     break;
                             }
