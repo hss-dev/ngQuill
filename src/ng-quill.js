@@ -9,6 +9,7 @@
         // extra websocket commands    
         this.socketCommands = {};
         this.lastEditorID = -1;
+        this.editors = {};
         // formats list
         this.formats = [
             'link',
@@ -105,6 +106,7 @@
                         },
                         changed = false,
                         editor,
+                        editorID,
                         setClass = function() {
                             // if editor content length <= 1 and content is required -> add custom error clas and ng-invalid
                             if ($scope.required && (!$scope.modelLength || $scope.modelLength <= 1)) {
@@ -124,7 +126,6 @@
                         };
 
 
-                    ngQuillService.lastEditorID = attr.editorid;
 
                     // set required flag (if text editor is required)
                     if ($scope.required && $scope.required === 'true') {
@@ -168,9 +169,15 @@
 
                     // init editor
                     editor = new Quill(element[0].querySelector('.advanced-wrapper .editor-container'), config);
-                    if (attr.focusthis){
+                    editorID = -1;
+                    if (attr.editorid){
+                        editorID = parseInt(attr.editorid);
+                    }
+                    if (attr.focusthis) {
                         editor.focus();
-                    }    
+                        ngQuillService.lastEditorID = editorID;
+                    }
+                    ngQuillService.editors[editorID] = editor;
 
                     // add toolbar afterwards with a timeout to be sure that translations has replaced.
                     if ($scope.toolbar && $scope.toolbar === 'true') {
@@ -201,7 +208,7 @@
 
                     // Update model on textchange
                     editor.on('text-change', function(delta, source) {
-                        ngQuillService.lastEditorID = attr.editorid;
+                        ngQuillService.lastEditorID = editorID;
                         $scope.$emit('text-change', {
                             delta: delta,
                             source: source
@@ -248,7 +255,7 @@
                             $log.error(ohwell);
                         }
                         $rootScope.quillws.onMessage(function(message) {
-                            if (ngQuillService.lastEditorID === attr.editorid) {
+                            if (ngQuillService.lastEditorID === editorID) {
                                 var textUpdate = JSON.parse(message.data);
 
                                 switch (textUpdate.action) {
@@ -305,7 +312,7 @@
                         });
 
                         editor.on('selection-change', function(range, source) {
-                            ngQuillService.lastEditorID = attr.editorid;
+                            ngQuillService.lastEditorID = editorID;
                             if (source === 'user') {
                                 var update;
 
