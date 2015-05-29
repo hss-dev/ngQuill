@@ -168,7 +168,9 @@
 
                     // init editor
                     editor = new Quill(element[0].querySelector('.advanced-wrapper .editor-container'), config);
-                    editor.focus();
+                    if (attr.focusthis){
+                        editor.focus();
+                    }    
 
                     // add toolbar afterwards with a timeout to be sure that translations has replaced.
                     if ($scope.toolbar && $scope.toolbar === 'true') {
