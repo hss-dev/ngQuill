@@ -408,10 +408,10 @@
                 '<option value="monospace">Monospace</option>' +
                 '</select>' +
                 '<select title="{{dict.size}}" class="ql-size" ng-if="shouldShow([\'size\'])">' +
-                '<option value="10px">{{dict.small}}</option>' +
-                '<option value="13px" selected="">{{dict.normal}}</option>' +
-                '<option value="18px">{{dict.large}}</option>' +
-                '<option value="32px">{{dict.huge}}</option>' +
+                '<option value="11px">{{dict.small}}</option>' +
+                '<option value="16px" selected="">{{dict.normal}}</option>' +
+                '<option value="30px">{{dict.large}}</option>' +
+                '<option value="35px">{{dict.huge}}</option>' +
                 '</select>' +
                 '</span>' +
                 '<span class="ql-format-group" ng-if="shouldShow([\'bold\', \'italic\', \'underline\', \'strike\'])">' +
