@@ -294,6 +294,7 @@
                                 action: "MICOFF"
                             };
                             if ($rootScope.talkOff) {
+                                editor.focus();
                                 $rootScope.talkOff = false;
                                 update.action = "MICON";
                             } else {
