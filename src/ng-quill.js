@@ -396,11 +396,11 @@
                 '<div id="content-container">' +
                 '<div class="advanced-wrapper">' +
                 '<div class="toolbar toolbar-container" ng-if="toolbar" ng-show="toolbarCreated">' +
-                '<span ng-class="{talkOff:talkOff}" class="ql-format-group fl recording" >' +
+                '<!--<span ng-class="{talkOff:talkOff}" class="ql-format-group fl recording" >' +
                 '<md-button ng-click="talkToggle()" class="md-fab single-icon record" aria-label="Record" title="Record">' +
                 '<md-icon></md-icon>' +
                 '</md-button>' +
-                '</span>' +
+                '</span>-->' +
 
                 '<span class="ql-format-group" ng-if="shouldShow([\'font\', \'size\'])">' +
                 '<select title="{{dict.font}}" class="ql-font" ng-if="shouldShow([\'font\'])">' +
