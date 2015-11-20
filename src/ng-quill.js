@@ -1,406 +1,477 @@
 (function() {
     'use strict';
+    var app;
+    // declare ngQuill module
+    app = angular.module("ngQuill", ['angular-websocket']);
 
-    angular.module('cb.main', ['ngResource', 'cb.common'])
-        .controller('mainMenuCtrl', [
-            '$scope',
-            '$log',
-            '$mdDialog',
-            '$state',
-            '$rootScope',
-            'setting',
-            'analytics',
-            'User',
-            'message',
-            'Report',
-            'Transport',
-            '$q',
-            '$interval',
-            '$http',
-            'Error',
-            'Lookups',
-            '$cookies',
-            '$websocket',
-            '$location',
-            'ngQuillService',
-            function($scope, $log, $mdDialog, $state, $rootScope, setting, analytics, User, message, Report, Transport, $q, $interval, $http, Error, Lookups, $cookies, $websocket, $location, ngQuillService) {
-                $log.debug("Main Controller");
+    app.service('ngQuillService', function() {
+        this.lastEditorID = -1;
+        this.editors = {};
+        // formats list
+        this.formats = [
+            'link',
+            'image',
+            'bold',
+            'italic',
+            'underline',
+            'strike',
+            'color',
+            'background',
+            'align',
+            'font',
+            'size',
+            'bullet',
+            'list'
+        ];
 
-                var mainCtrl = $scope;
-                mainCtrl.setting = setting;
+        // default translations
+        this.defaultTranslation = {
+            font: 'Font',
+            size: 'Size',
+            small: 'Small',
+            normal: 'Normal',
+            large: 'Large',
+            huge: 'Huge',
+            bold: 'Bold',
+            italic: 'Italic',
+            underline: 'Underline',
+            strike: 'Strikethrough',
+            textColor: 'Text Color',
+            backgroundColor: 'Background Color',
+            list: 'List',
+            bullet: 'Bullet',
+            textAlign: 'Text Align',
+            left: 'Left',
+            center: 'Center',
+            right: 'Right',
+            justify: 'Justify',
+            link: 'Link',
+            image: 'Image',
+            visitURL: 'Visit URL',
+            change: 'Change',
+            done: 'Done',
+            cancel: 'Cancel',
+            remove: 'Remove',
+            insert: 'Insert',
+            preview: 'Preview'
+        };
 
-                var canExit = function() {
-                    var weAreHere = "" + $state.current.name;
-                    if (weAreHere === 'report') {
-                        $log.debug("Asked to exit, but refusing as reporting is in progress");
-                        if (angular.isDefined(Report.exam)) {
-                            var status = Report.exam.reportStatus;
-                            if (status !== 'VERIFIED' || Report.doingAddendum) {
-                                message.showToast("Disabled whilst reporting", "warning");
-                                return false;
-                            }
-                        }
-                    }
-                    return true;
-                };
-
-                mainCtrl.go = function(a) {
-
-                    if (canExit()) {
-                        mainCtrl.state = a;
-                        $state.go(a);
-                    }
-                };
-
-                mainCtrl.state = "dashboard";
-
-                mainCtrl.switchTheme = function(t) {
-                    if (t) {
-                        mainCtrl.theme = t;
-                    }
-                    if (mainCtrl.theme === "Normal") {
-                        analytics.log("Main", "Dark theme has been selected");
-                        mainCtrl.theme = "dark-theme";
-                    } else {
-                        analytics.log("Main", "Normal theme has been selected");
-                        mainCtrl.theme = "Normal";
-                    }
-                    setTheme(mainCtrl.theme);
-                    User.saveSettings();
-                };
-
-                var setTheme = function(t) {
-                    if (!t) {
-                        t = 'Normal';
-                    }
-                    mainCtrl.theme = t;
-                    mainCtrl.normal = (t === 'Normal');
-                    setting.theme = t;
-                    if (!User.prefs) {
-                        User.prefs = {};
-                    }
-                    User.prefs.theme = t;
-                    $rootScope.$emit('newTheme', mainCtrl.theme);
-                };
-
-                mainCtrl.talk = 'off';
-                mainCtrl.changeTalk = function(state) {
-                    mainCtrl.talk = state;
-                    $rootScope.talkOff = true;
-                    var update = {
-                        action: "MICROPHONESLEEP"
-                    };
-                    if (state === 'on') {
-                        $rootScope.talkOff = false;
-                        update.action = "MICROPHONEON";
-                    }
-                    if (state === 'off') {
-                        update.action = "MICROPHONEOFF";
-                    }
-                    if ($rootScope.quillws) {
-                        $rootScope.quillws.send(JSON.stringify(update));
-                    }
-                };
-
-                mainCtrl.toggleInter = function() {
-                    mainCtrl.showInter = !mainCtrl.showInter;
-                };
-
-                mainCtrl.switchInter = function() {
-                    mainCtrl.dti(!mainCtrl.setting.dtiTriggerOff);
-                    //                    if (mainCtrl.setting.dtiTriggerOff) {
-                    //                        message.showToast("Integration is on");
-                    //                    } else {
-                    //                        message.showToast("Integration is off");
-                    //                    }
-                };
-
-                mainCtrl.dti = function(off) {
-                    mainCtrl.setting.dtiTriggerOff = off;
-                    $cookies.put('dtiTriggerOff', off);
-                };
-
-                mainCtrl.setTrigURL = function(add, noToast) {
-                    mainCtrl.setting.dtiTriggerADDR = add;
-                    mainCtrl.setting.dtiTriggerURL = mainCtrl.setting.dtiTriggerPRO + mainCtrl.setting.dtiTriggerADDR + ":" + mainCtrl.setting.dtiTriggerPORT + mainCtrl.setting.dtiTriggerPATH;
-                    $cookies.put('dtiTriggerADDR', add);
-                    if (noToast) {
-                        return;
-                    }
-                    message.showToast("Integration address has changed to: " + mainCtrl.setting.dtiTriggerURL);
-                };
-
-                mainCtrl.open = 'widget-shown';
-                $rootScope.sideOpen = true;
-                mainCtrl.toggleWidget = function() {
-                    if (mainCtrl.open === 'widget-shown') {
-                        analytics.log("main", "Side bar has been toggled closed");
-                        mainCtrl.open = '';
-                        $rootScope.sideOpen = false;
-                    } else {
-                        analytics.log("main", "Side bar has been toggled open");
-                        mainCtrl.open = 'widget-shown';
-                        $rootScope.sideOpen = true;
-                    }
-                    User.prefs.widgetShown = mainCtrl.open;
-                    User.prefs.sideOpen = $rootScope.sideOpen;
-                    User.saveSettings();
-                };
-
-                mainCtrl.displaySettings = false;
-                mainCtrl.toggleDisplay = function() {
-                    mainCtrl.displaySettings = !mainCtrl.displaySettings;
-                    analytics.log("main", "user settings has been toggled to " + mainCtrl.displaySettings);
-                    User.prefs.displayeSettings = mainCtrl.displaySettings;
-                    User.saveSettings();
-                };
-
-                mainCtrl.toastPosition = {
-                    bottom: true
-                };
-
-                mainCtrl.getToastPosition = function() {
-                    var what = Object.keys(mainCtrl.toastPosition)
-                        .filter(function(pos) {
-                            return mainCtrl.toastPosition[pos];
-                        })
-                        .join(' ');
-                    return what;
-                };
-
-                mainCtrl.showAdvanced = function(ev) {
-                    $state.go('editRule', {
-                        'filterName': ''
-                    });
-
-                };
-                mainCtrl.drafts = [];
-                mainCtrl.deleteDrafts = function(d) {
-                    var proms = d.ids.map(function(examID) {
-                        return Transport.deleteDraftReportFromExamID(examID);
-                    });
-                    $q.all(proms).then(function(d) {
-                        message.showToast("Draft report has been deleted", "warning");
-                    });
-                };
-
-                mainCtrl.gotoDraft = function(draft) {
-                    if (canExit()) {
-                        $state.go('report', {
-                            'examID': draft.examID,
-                            'filterName': draft.filterID,
-                            'examCode': draft.examCode
-                        });
-                    }
-                };
-
-                mainCtrl.updateDrafts = function(event, toState, toParams, fromState, fromParams) {
-                    mainCtrl.drafts = [];
-                    Transport.loadAllDraftReports().then(function(d) {
-                        var uniqueID = [];
-                        if (d === 404) {
-                            mainCtrl.drafts = [];
-                        } else {
-                            mainCtrl.drafts = d.map(function(rep) {
-                                var r = JSON.parse(rep);
-                                var examIDs = Object.keys(r).filter(function(k) {
-                                    return (!isNaN(k));
-                                });
-                                return {
-                                    "examID": r.examID,
-                                    "name": r.name,
-                                    "filterID": r.filterID,
-                                    "examCode": r.examCode,
-                                    "desc": r.desc,
-                                    "date": r.saved,
-                                    "ids": examIDs
-                                };
-                            }).filter(function(draft) {
-                                if (uniqueID.indexOf(draft.examID) > -1) {
-                                    return false;
-                                }
-                                var matches = draft.ids.filter(function(id) {
-                                    return (uniqueID.indexOf(id) > -1);
-                                });
-                                var unique = (matches.length === 0);
-                                if (unique) {
-                                    uniqueID.push.apply(uniqueID, draft.ids);
-                                    return true;
-                                }
-                                return false;
-                            }).sort(function(draft1, draft2) {
-                                return mainCtrl.sortDates(draft1, draft2);
-                            });
-                        }
-                    });
-
-                };
-                mainCtrl.sortDates = function(draft1, draft2) {
-                    var one = new Date(draft1.date).getTime();
-                    var two = new Date(draft2.date).getTime();
-                    if (one < two) {
-                        return -1;
-                    } else if (two < one) {
-                        return 1;
-                    }
-                    return 0;
-                };
-
-                mainCtrl.nextDigest = function() {
-                    $interval(mainCtrl.updateDrafts, 0, 1, true, 0);
-                };
-
-                mainCtrl.toggleSending = function() {
-                    mainCtrl.showSend = !mainCtrl.showSend;
-                };
-
-                mainCtrl.setSettings = function() {
-                    if (User.prefs.theme) {
-                        setTheme(User.prefs.theme);
-                        mainCtrl.open = User.prefs.widgetShown;
-                        $rootScope.sideOpen = User.prefs.sideOpen;
-                        mainCtrl.displaySettings = mainCtrl.displaySettings;
-                    }
-                };
-
-                mainCtrl.processMessage = function(socketMessage) {
-                    //message.showUpdate('Voice command:"'+socketMessage.action+'"');
-                    var editingCommands = ["INSERT", "DELETE", "HIGHLIGHT", "CARETMOVED"];
-                    if (editingCommands.contains(socketMessage.action)) {
-                        $rootScope.$emit("EDIT", socketMessage);
-                    } else {
-                        var func = ngQuillService.socketCommands[socketMessage.action];
-                        if (func) {
-                            func();
-                        } else {
-                            message.showToast('Unknown voice command:"' + socketMessage.action + '"', 'danger');
-                            $log.error("Unknown action in text update: " + socketMessage.action);
-                        }
-                    }
-                };
-                var die = $rootScope.$on('$stateChangeStart',
-                    function(event, toState, toParams, fromState, fromParams) {
-                        mainCtrl.state = toState.name;
-                    });
-                var die2 = $rootScope.$on('draftchanges', mainCtrl.nextDigest);
-                var die3 = $rootScope.$on('loadedSettings', mainCtrl.setSettings);
-                var die4 = $rootScope.$on('loadedMessage', function(datas) {});
-                var die5 = $rootScope.$on("MIC", function(event, state) {
-                    $log.debug("mic broadcast picked up with state");
-                    $log.debug(state);
-                    mainCtrl.changeTalk(state);
-                });
-
-                $scope.$on("$destroy", function() {
-                    die();
-                    die2();
-                    die3();
-                    die4();
-                    die5();
-                });
-
-
-                mainCtrl.theme = 'Normal';
-                mainCtrl.normal = true;
-
-
-                User.populate("mainMenu", mainCtrl).then(function(u) {
-                    mainCtrl.updateDrafts();
-                    User.loadMessages();
-                    mainCtrl.User = User;
-                    Lookups.populateStandard().then(function(lookup) {
-                        mainCtrl.finalSetup(lookup);
-                    });
-                });
-
-                mainCtrl.finalSetup = function(lookup) {
-                    mainCtrl.allUsers = Lookups.lookups.users;
-                    mainCtrl.validateUser = function(text) {
-                        if (angular.isUndefined(text) || text === null) {
-                            return true;
-                        }
-                        var found = userMatch(text);
-                        mainCtrl.sendToValid = found.length > 0;
-                        return mainCtrl.sendToValid;
-                    };
-
-                    var userMatch = function(query) {
-                        var lowercaseQuery = angular.lowercase(query);
-                        var list = mainCtrl.allUsers.filter(function(user) {
-                            return (angular.lowercase(user.username) === lowercaseQuery);
-                        });
-                        return list;
-                    };
-
-                    mainCtrl.getMatches = function(query) {
-                        var lowercaseQuery = angular.lowercase(query);
-                        var list = mainCtrl.allUsers.filter(function(user) {
-                            return (user.username.indexOf(lowercaseQuery) > -1);
-                        });
-                        return list;
-                    };
-
-                    mainCtrl.sendMessage = function(m, s) {
-                        User.sendMessage(m, s).then(function() {
-                            message.showToast("Message has been sent to " + s, "normal");
-                        });
-                    };
-
-                    mainCtrl.markedAsRead = function(m) {
-                        User.markedAsRead(m).then(function() {
-                            message.showToast("Message has been been marked as read");
-                        });
-                    };
-
-                    try {
-                        var fromCookie = $cookies.get('dtiTriggerADDR');
-                        if (fromCookie) {
-                            mainCtrl.setTrigURL(fromCookie, true);
-                        }
-                    } catch (rubbish) {
-                        //bad cookie      
-                    }
-                    try {
-                        mainCtrl.dti($cookies.get('dtiTriggerOff'));
-                    } catch (rubbish) {
-                        //bad cookie      
-                    }
-
-                    mainCtrl.voiceSocket = "Yet to connect";
-                    if ($rootScope.quillws) {
-                        mainCtrl.voiceSocket = "already to connect";
-                    } else {
-                        var wsaddress = "localhost:8089";
-                        try {
-                            if ($location.protocol() === 'http') {
-                                $rootScope.quillws = $websocket('ws://' + wsaddress);
-                            } else {
-                                $rootScope.quillws = $websocket('wss://' + wsaddress);
-                            }
-                            $rootScope.quillws.onMessage(function(msg) {
-                                mainCtrl.processMessage(JSON.parse(msg.data));
-                            });
-                            mainCtrl.voiceSocket = "Connected";
-                            $rootScope.quillws.onError(function(msg) {
-                                mainCtrl.voiceSocket = "Error connecting";
-                                $log.error(msg);
-                                $rootScope.talkOff = true;
-                            });
-                            $rootScope.quillws.onClose(function(msg) {
-                                //mainCtrl.voiceSocket = "Closed connecting";
-                                $rootScope.talkOff = true;
-                            });
-                        } catch (ohwell) {
-                            mainCtrl.voiceSocket = "Failed to connect";
-                            $rootScope.talkOff = true;
-                            $log.error("Quill websocket has not connected");
-                            $log.error(ohwell);
-                        }
-
-                    }
-
-                };
-
+        // validate formats
+        this.validateFormats = function(checkFormats) {
+            var correctFormats = [],
+            self = this,
+            i = 0;
+            for (i; i < checkFormats.length; i = i + 1) {
+                if (self.formats.indexOf(checkFormats[i]) !== -1) {
+                    correctFormats.push(checkFormats[i]);
+                }
             }
-        ]);
-}());
+            return correctFormats;
+        };
+
+    });
+
+    app.directive("ngQuillEditor", [
+        '$timeout',
+        'ngQuillService',
+        '$websocket',
+        '$rootScope',
+        '$location',
+        '$log',
+        function($timeout, ngQuillService, $websocket, $rootScope, $location, $log) {
+            return {
+                scope: {
+                    'toolbarEntries': '@?',
+                    'toolbar': '@?',
+                    'linkTooltip': '@?',
+                    'imageTooltip': '@?',
+                    'theme': '@?',
+                    'translations': '=?',
+                    'required': '@?editorRequired',
+                    'readOnly': '@?',
+                    'errorClass': '@?',
+                    'ngModel': '=',
+                },
+
+                require: 'ngModel',
+                restrict: 'E',
+                templateUrl: 'ngQuill/template.html',
+                link: function($scope, element, attr, ngModel) {
+                    var config = {
+                            theme: $scope.theme || 'snow',
+                            readOnly: $scope.readOnly || false,
+                            formats: $scope.toolbarEntries ? ngQuillService.validateFormats($scope.toolbarEntries.split(' ')) : ngQuillService.formats,
+                            modules: {}
+                        },
+                        changed = false,
+                        editor,
+                        editorID,
+                        setClass = function() {
+                            // if editor content length <= 1 and content is required -> add custom error clas and ng-invalid
+                            if ($scope.required && (!$scope.modelLength || $scope.modelLength <= 1)) {
+                                element.addClass('ng-invalid');
+                                element.removeClass('ng-valid');
+                                // if form was reseted and input field set to empty
+                                if ($scope.errorClass && changed && element.hasClass('ng-dirty')) {
+                                    element.children().addClass($scope.errorClass);
+                                }
+                            } else { // set to valid
+                                element.removeClass('ng-invalid');
+                                element.addClass('ng-valid');
+                                if ($scope.errorClass) {
+                                    element.children().removeClass($scope.errorClass);
+                                }
+                            }
+                        };
+
+
+
+                    // set required flag (if text editor is required)
+                    if ($scope.required && $scope.required === 'true') {
+                        $scope.required = true;
+                    } else {
+                        $scope.required = false;
+                    }
+
+                    // default translations
+                    $scope.dict = ngQuillService.defaultTranslation;
+
+                    $scope.shouldShow = function(formats) {
+                        var okay = false,
+                            i = 0;
+                        for (i; i < formats.length; i = i + 1) {
+                            if (config.formats.indexOf(formats[i]) !== -1) {
+                                okay = true;
+                                break;
+                            }
+                        }
+
+                        return okay;
+                    };
+
+                    // if there are custom translations
+                    if ($scope.translations) {
+                        $scope.dict = $scope.translations;
+                    }
+
+                    // add tooltip modules
+                    if ($scope.linkTooltip && $scope.linkTooltip === 'true') {
+                        config.modules['link-tooltip'] = {
+                            template: '<span class="title">' + $scope.dict.visitURL + ':&nbsp;</span>' + '<a href="#" class="url" target="_blank" href="about:blank"></a>' + '<input class="input" type="text">' + '<span>&nbsp;&#45;&nbsp;</span>' + '<a href="javascript:;" class="change">' + $scope.dict.change + '</a>' + '<a href="javascript:;" class="remove">' + $scope.dict.remove + '</a>' + '<a href="javascript:;" class="done">' + $scope.dict.done + '</a>'
+                        };
+                    }
+                    if ($scope.imageTooltip && $scope.imageTooltip === 'true') {
+                        config.modules['image-tooltip'] = {
+                            template: '<input class="input" type="textbox">' + '<div class="preview">' + '    <span>' + $scope.dict.preview + '</span>' + '</div>' + '<a href="javascript:;" class="cancel">' + $scope.dict.cancel + '</a>' + '<a href="javascript:;" class="insert">' + $scope.dict.insert + '</a>'
+                        };
+                    }
+
+                    // init editor
+                    editor = new Quill(element[0].querySelector('.advanced-wrapper .editor-container'), config);
+                    editorID = -1;
+                    if (attr.editorid) {
+                        editorID = parseInt(attr.editorid);
+                    }
+                    if (attr.focusthis) {
+                        editor.focus();
+                        ngQuillService.lastEditorID = editorID;
+                    }
+                    ngQuillService.editors[editorID] = editor;
+
+                    // add toolbar afterwards with a timeout to be sure that translations has replaced.
+                    if ($scope.toolbar && $scope.toolbar === 'true') {
+                        $timeout(function() {
+                            editor.addModule('toolbar', {
+                                container: element[0].querySelector('.advanced-wrapper .toolbar-container')
+                            });
+                            $scope.toolbarCreated = true;
+                        }, 0);
+                    }
+
+                    // provide event to get recognized when editor is created -> pass editor object.
+                    $timeout(function() {
+                        $scope.$emit('editorCreated', editor);
+                    });
+
+                    // set initial value
+                    $scope.$watch(function() {
+                        return $scope.ngModel;
+                    }, function(newText) {
+                        if (typeof newText === 'string' && !changed) {
+                            // Set initial value;
+                            editor.setHTML(newText);
+                        }
+                    });
+
+                    $scope.regEx = /^([2-9]|[1-9][0-9]+)$/;
+
+                    // Update model on textchange
+                    editor.on('text-change', function(delta, source) {
+                        ngQuillService.lastEditorID = editorID;
+                        $scope.$emit('text-change', {
+                            delta: delta,
+                            source: source
+                        });
+                        var oldChange = changed;
+                        changed = true;
+                        $timeout(function() {
+                            // Calculate content length
+                            $scope.modelLength = editor.getLength();
+                            // Check if error class should be set
+                            if (oldChange) {
+                                setClass();
+                            }
+                            // Set new model value
+                            // Set new model value
+                            if (typeof ngModel !== 'undefined') {
+                                ngModel.$setViewValue(editor.getHTML());
+                            }
+
+                            // Send to ws
+                            if (attr.wsaddress && source === 'user') {
+                                delta.ops.forEach(function(entry) {
+                                    var textUpdate = $scope.convertOperation(entry);
+                                    $rootScope.quillws.send(JSON.stringify(textUpdate));
+                                });
+                            }
+                        }, 0);
+                    });
+
+                    var die = $rootScope.$on("EDIT", function(event, textUpdate) {
+                        if (ngQuillService.lastEditorID === editorID) {
+                            $log.debug("EDIT event found");
+                            $log.debug(textUpdate);
+                            switch (textUpdate.action) {
+                                case "INSERT":
+                                    editor.insertText(textUpdate.start, textUpdate.text);
+                                    break;
+                                case "DELETE":
+                                    editor.deleteText(textUpdate.start, textUpdate.start + textUpdate.numChars);
+                                    break;
+                                case "HIGHLIGHT":
+                                    editor.setSelection(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars);
+                                    break;
+                                case "CARETMOVED":
+                                    editor.setSelection(textUpdate.start, textUpdate.start);
+                                    break;
+                                default:
+                                    $log.error("Unknown action in text update: " + textUpdate.action);
+                                    break;
+                            }
+                        }
+
+                    });
+                    $scope.on("$destroy", function() {
+                        die();
+                    });
+
+
+                    editor.on('selection-change', function(range, source) {
+                        ngQuillService.lastEditorID = editorID;
+
+                        if (source === 'user') {
+                            var update;
+
+                            if (range) {
+                                if (range.start === range.end) {
+                                    update = {
+                                        action: "SYNC",
+                                        text: editor.getText()
+                                    };
+                                    $rootScope.quillws.send(JSON.stringify(update));
+                                    update = {
+                                        action: "CARETMOVED",
+                                        start: range.start
+                                    };
+                                } else {
+                                    update = {
+                                        action: "HIGHLIGHT",
+                                        selStart: range.start,
+                                        selNumChars: range.end
+                                    };
+                                }
+                                $rootScope.quillws.send(JSON.stringify(update));
+                            } else {
+                                $log.debug("Focus has gone");
+                            }
+                        }
+
+                    });
+
+
+                    $scope.convertOperation = function(operation) {
+                        var result;
+
+                        if (operation.retain) {
+                            result = {
+                                action: "RETAIN",
+                                start: operation.retain
+                            };
+                        } else if (operation.insert) {
+                            result = {
+                                action: "INSERT",
+                                text: operation.insert
+                            };
+                        } else if (operation.delete) {
+                            result = {
+                                action: "DELETE",
+                                numChars: operation.delete
+                            };
+                        } else {
+                            $log.error("Unrecognised opertioni:");
+                            $log.error(opertion);
+                        }
+
+                        return result;
+                    };
+                }
+
+            };
+        }
+    ]);
+
+    app.run([
+        '$templateCache',
+        '$rootScope',
+        '$window',
+        function($templateCache, $rootScope, $window) {
+
+            // reset all quill editors (to not flood window object works only with ui-router)
+            var die = $rootScope.$on('$locationChangeSuccess', function() {
+                if ($window.Quill && $window.Quill.editors && $window.Quill.editors.length) {
+                    angular.forEach($window.Quill.editors, function(editor) {
+                        editor.destroy();
+                    });
+                }
+            });
+
+
+            // put template in template cache
+            return $templateCache.put('ngQuill/template.html',
+                '<div id="content-container">' +
+                '<div class="advanced-wrapper">' +
+                '<div class="toolbar toolbar-container" ng-if="toolbar" ng-show="toolbarCreated">' +
+                '<!-- <span ng-class="{talkOff:talkOff}" class="ql-format-group fl recording" >' +
+                '<md-button ng-click="talkToggle()" class="md-fab single-icon record" aria-label="Record" title="Record">' +
+                '<md-icon></md-icon>' +
+                '</md-button>' +
+                '</span> -->' +
+                '<span class="ql-format-group" ng-if="shouldShow([\'font\', \'size\'])">' +
+                '<select title="{{dict.font}}" class="ql-font" ng-if="shouldShow([\'font\'])">' +
+                '<option value="sans-serif" selected="">Sans Serif</option>' +
+                '<option value="serif">Serif</option>' +
+                '<option value="monospace">Monospace</option>' +
+                '</select>' +
+                '<select title="{{dict.size}}" class="ql-size" ng-if="shouldShow([\'size\'])">' +
+                '<option value="13px">{{dict.small}}</option>' +
+                '<option value="18px" selected="">{{dict.normal}}</option>' +
+                '<option value="32px">{{dict.large}}</option>' +
+                '<option value="64px">{{dict.huge}}</option>' +
+                '</select>' +
+                '</span>' +
+                '<span class="ql-format-group" ng-if="shouldShow([\'bold\', \'italic\', \'underline\', \'strike\'])">' +
+                '<span title="{{dict.bold}}" class="ql-format-button ql-bold" ng-if="shouldShow([\'bold\'])"></span>' +
+                '<span title="{{dict.italic}}" class="ql-format-button ql-italic" ng-if="shouldShow([\'italic\'])"></span>' +
+                '<span title="{{dict.underline}}" class="ql-format-button ql-underline" ng-if="shouldShow([\'underline\'])"></span>' +
+                '<span title="{{dict.strike}}" class="ql-format-button ql-strike" ng-if="shouldShow([\'strike\'])"></span>' +
+                '</span>' +
+                '<span class="ql-format-group" ng-if="shouldShow([\'color\', \'background\'])">' +
+                '<select title="{{dict.textColor}}" class="ql-color" ng-if="shouldShow([\'color\'])">' +
+                '<option value="rgb(0, 0, 0)" label="rgb(0, 0, 0)" selected=""></option>' +
+                '<option value="rgb(230, 0, 0)" label="rgb(230, 0, 0)"></option>' +
+                '<option value="rgb(255, 153, 0)" label="rgb(255, 153, 0)"></option>' +
+                '<option value="rgb(255, 255, 0)" label="rgb(255, 255, 0)"></option>' +
+                '<option value="rgb(0, 138, 0)" label="rgb(0, 138, 0)"></option>' +
+                '<option value="rgb(0, 102, 204)" label="rgb(0, 102, 204)"></option>' +
+                '<option value="rgb(153, 51, 255)" label="rgb(153, 51, 255)"></option>' +
+                '<option value="rgb(255, 255, 255)" label="rgb(255, 255, 255)"></option>' +
+                '<option value="rgb(250, 204, 204)" label="rgb(250, 204, 204)"></option>' +
+                '<option value="rgb(255, 235, 204)" label="rgb(255, 235, 204)"></option>' +
+                '<option value="rgb(255, 255, 204)" label="rgb(255, 255, 204)"></option>' +
+                '<option value="rgb(204, 232, 204)" label="rgb(204, 232, 204)"></option>' +
+                '<option value="rgb(204, 224, 245)" label="rgb(204, 224, 245)"></option>' +
+                '<option value="rgb(235, 214, 255)" label="rgb(235, 214, 255)"></option>' +
+                '<option value="rgb(187, 187, 187)" label="rgb(187, 187, 187)"></option>' +
+                '<option value="rgb(240, 102, 102)" label="rgb(240, 102, 102)"></option>' +
+                '<option value="rgb(255, 194, 102)" label="rgb(255, 194, 102)"></option>' +
+                '<option value="rgb(255, 255, 102)" label="rgb(255, 255, 102)"></option>' +
+                '<option value="rgb(102, 185, 102)" label="rgb(102, 185, 102)"></option>' +
+                '<option value="rgb(102, 163, 224)" label="rgb(102, 163, 224)"></option>' +
+                '<option value="rgb(194, 133, 255)" label="rgb(194, 133, 255)"></option>' +
+                '<option value="rgb(136, 136, 136)" label="rgb(136, 136, 136)"></option>' +
+                '<option value="rgb(161, 0, 0)" label="rgb(161, 0, 0)"></option>' +
+                '<option value="rgb(178, 107, 0)" label="rgb(178, 107, 0)"></option>' +
+                '<option value="rgb(178, 178, 0)" label="rgb(178, 178, 0)"></option>' +
+                '<option value="rgb(0, 97, 0)" label="rgb(0, 97, 0)"></option>' +
+                '<option value="rgb(0, 71, 178)" label="rgb(0, 71, 178)"></option>' +
+                '<option value="rgb(107, 36, 178)" label="rgb(107, 36, 178)"></option>' +
+                '<option value="rgb(68, 68, 68)" label="rgb(68, 68, 68)"></option>' +
+                '<option value="rgb(92, 0, 0)" label="rgb(92, 0, 0)"></option>' +
+                '<option value="rgb(102, 61, 0)" label="rgb(102, 61, 0)"></option>' +
+                '<option value="rgb(102, 102, 0)" label="rgb(102, 102, 0)"></option>' +
+                '<option value="rgb(0, 55, 0)" label="rgb(0, 55, 0)"></option>' +
+                '<option value="rgb(0, 41, 102)" label="rgb(0, 41, 102)"></option>' +
+                '<option value="rgb(61, 20, 102)" label="rgb(61, 20, 102)"></option>' +
+                '</select>' +
+                '<select title="{{dict.backgroundColor}}" class="ql-background" ng-if="shouldShow([\'background\'])">' +
+                '<option value="rgb(0, 0, 0)" label="rgb(0, 0, 0)"></option>' +
+                '<option value="rgb(230, 0, 0)" label="rgb(230, 0, 0)"></option>' +
+                '<option value="rgb(255, 153, 0)" label="rgb(255, 153, 0)"></option>' +
+                '<option value="rgb(255, 255, 0)" label="rgb(255, 255, 0)"></option>' +
+                '<option value="rgb(0, 138, 0)" label="rgb(0, 138, 0)"></option>' +
+                '<option value="rgb(0, 102, 204)" label="rgb(0, 102, 204)"></option>' +
+                '<option value="rgb(153, 51, 255)" label="rgb(153, 51, 255)"></option>' +
+                '<option value="rgb(255, 255, 255)" label="rgb(255, 255, 255)" selected=""></option>' +
+                '<option value="rgb(250, 204, 204)" label="rgb(250, 204, 204)"></option>' +
+                '<option value="rgb(255, 235, 204)" label="rgb(255, 235, 204)"></option>' +
+                '<option value="rgb(255, 255, 204)" label="rgb(255, 255, 204)"></option>' +
+                '<option value="rgb(204, 232, 204)" label="rgb(204, 232, 204)"></option>' +
+                '<option value="rgb(204, 224, 245)" label="rgb(204, 224, 245)"></option>' +
+                '<option value="rgb(235, 214, 255)" label="rgb(235, 214, 255)"></option>' +
+                '<option value="rgb(187, 187, 187)" label="rgb(187, 187, 187)"></option>' +
+                '<option value="rgb(240, 102, 102)" label="rgb(240, 102, 102)"></option>' +
+                '<option value="rgb(255, 194, 102)" label="rgb(255, 194, 102)"></option>' +
+                '<option value="rgb(255, 255, 102)" label="rgb(255, 255, 102)"></option>' +
+                '<option value="rgb(102, 185, 102)" label="rgb(102, 185, 102)"></option>' +
+                '<option value="rgb(102, 163, 224)" label="rgb(102, 163, 224)"></option>' +
+                '<option value="rgb(194, 133, 255)" label="rgb(194, 133, 255)"></option>' +
+                '<option value="rgb(136, 136, 136)" label="rgb(136, 136, 136)"></option>' +
+                '<option value="rgb(161, 0, 0)" label="rgb(161, 0, 0)"></option>' +
+                '<option value="rgb(178, 107, 0)" label="rgb(178, 107, 0)"></option>' +
+                '<option value="rgb(178, 178, 0)" label="rgb(178, 178, 0)"></option>' +
+                '<option value="rgb(0, 97, 0)" label="rgb(0, 97, 0)"></option>' +
+                '<option value="rgb(0, 71, 178)" label="rgb(0, 71, 178)"></option>' +
+                '<option value="rgb(107, 36, 178)" label="rgb(107, 36, 178)"></option>' +
+                '<option value="rgb(68, 68, 68)" label="rgb(68, 68, 68)"></option>' +
+                '<option value="rgb(92, 0, 0)" label="rgb(92, 0, 0)"></option>' +
+                '<option value="rgb(102, 61, 0)" label="rgb(102, 61, 0)"></option>' +
+                '<option value="rgb(102, 102, 0)" label="rgb(102, 102, 0)"></option>' +
+                '<option value="rgb(0, 55, 0)" label="rgb(0, 55, 0)"></option>' +
+                '<option value="rgb(0, 41, 102)" label="rgb(0, 41, 102)"></option>' +
+                '<option value="rgb(61, 20, 102)" label="rgb(61, 20, 102)"></option>' +
+                '</select>' +
+                '</span>' +
+                '<span class="ql-format-group" ng-if="shouldShow([\'list\', \'bullet\'])">' +
+                '<span title="{{dict.list}}" class="ql-format-button ql-list" ng-if="shouldShow([\'list\'])"></span>' +
+                '<span title="{{dict.bullet}}" class="ql-format-button ql-bullet" ng-if="shouldShow([\'bullet\'])"></span>' +
+                '</span>' +
+                '<span class="ql-format-group" ng-if="shouldShow([\'align\'])">' +
+                '<select title="{{dict.textAlign}}" class="ql-align">' +
+                '<option value="left" label="{{dict.left}}" selected=""></option>' +
+                '<option value="center" label="{{dict.center}}"></option>' +
+                '<option value="right" label="{{dict.right}}"></option>' +
+                '<option value="justify" label="{{dict.justify}}"></option>' +
+                '</select>' +
+                '</span>' +
+                '<span class="ql-format-group" ng-if="shouldShow([\'link\', \'image\'])">' +
+                '<span title="{{dict.link}}" class="ql-format-button ql-link" ng-if="shouldShow([\'link\'])"></span>' +
+                '<span title="{{dict.image}}" class="ql-format-button ql-image" ng-if="shouldShow([\'image\'])"></span>' +
+                '</span>' +
+                '</div>' +
+                '<div class="editor-container"></div>' +
+                '<input type="text" ng-model="modelLength" ng-if="required" ng-hide="true" ng-pattern="/^([2-9]|[1-9][0-9]+)$/">' +
+                '</div>' +
+                '</div>');
+        }
+    ]);
+}).call(this);
