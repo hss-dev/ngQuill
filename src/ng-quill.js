@@ -176,6 +176,7 @@
                         editor.focus();
                         ngQuillService.lastEditorID = editorID;
                     }
+                    $scope.editorID = editorID;
                     ngQuillService.editors[editorID] = editor;
 
                     // add toolbar afterwards with a timeout to be sure that translations has replaced.
@@ -334,7 +335,8 @@
         '$templateCache',
         '$rootScope',
         '$window',
-        function($templateCache, $rootScope, $window) {
+        'ngQuillService', 
+        function($templateCache, $rootScope, $window, ngQuillService) {
 
             // reset all quill editors (to not flood window object works only with ui-router)
             var die = $rootScope.$on('$locationChangeSuccess', function() {
@@ -469,7 +471,7 @@
                 '</span>' +
                 '</div>' +
                 '<div class="editor-container"></div>' +
-                '<input type="text" ng-model="modelLength" ng-if="required" ng-hide="true" ng-pattern="/^([2-9]|[1-9][0-9]+)$/">' +
+                '<input type="text" ng-model="modelLength" id="quillEditor-{{editorID}}" ng-if="required" ng-hide="true" ng-pattern="/^([2-9]|[1-9][0-9]+)$/">' +
                 '</div>' +
                 '</div>');
         }
