@@ -59,8 +59,8 @@
         // validate formats
         this.validateFormats = function(checkFormats) {
             var correctFormats = [],
-            self = this,
-            i = 0;
+                self = this,
+                i = 0;
             for (i; i < checkFormats.length; i = i + 1) {
                 if (self.formats.indexOf(checkFormats[i]) !== -1) {
                     correctFormats.push(checkFormats[i]);
@@ -268,33 +268,31 @@
 
 
                     editor.on('selection-change', function(range, source) {
-                        ngQuillService.lastEditorID = editorID;
 
-                        if (source === 'user') {
+                        if (source === 'user' && range !== null) {
+                            ngQuillService.lastEditorID = editorID;
                             var update;
 
-                            if (range) {
-                                if (range.start === range.end) {
-                                    update = {
-                                        action: "SYNC",
-                                        text: editor.getText()
-                                    };
-                                    $rootScope.quillws.send(JSON.stringify(update));
-                                    update = {
-                                        action: "CARETMOVED",
-                                        start: range.start
-                                    };
-                                } else {
-                                    update = {
-                                        action: "HIGHLIGHT",
-                                        selStart: range.start,
-                                        selNumChars: range.end
-                                    };
-                                }
+                            if (range.start === range.end) {
+                                update = {
+                                    action: "SYNC",
+                                    text: editor.getText()
+                                };
                                 $rootScope.quillws.send(JSON.stringify(update));
+                                update = {
+                                    action: "CARETMOVED",
+                                    start: range.start
+                                };
                             } else {
-                                $log.debug("Focus has gone");
+                                update = {
+                                    action: "HIGHLIGHT",
+                                    selStart: range.start,
+                                    selNumChars: range.end
+                                };
                             }
+                            $rootScope.quillws.send(JSON.stringify(update));
+                        } else {
+                            $log.debug("Focus has gone");
                         }
 
                     });
@@ -335,7 +333,7 @@
         '$templateCache',
         '$rootScope',
         '$window',
-        'ngQuillService', 
+        'ngQuillService',
         function($templateCache, $rootScope, $window, ngQuillService) {
 
             // reset all quill editors (to not flood window object works only with ui-router)
