@@ -274,6 +274,8 @@
                             var update;
 
                             if (range.start === range.end) {
+                                var element = document.getElementById("ql-editor-"+editorID);
+                                element.scrollIntoView();                        
                                 update = {
                                     action: "SYNC",
                                     text: editor.getText()
