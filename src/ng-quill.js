@@ -242,6 +242,8 @@
                         if (ngQuillService.lastEditorID === editorID) {
                             $log.debug("EDIT event found");
                             $log.debug(textUpdate);
+                            var element = document.getElementById("ql-editor-"+editorID);
+                            element.scrollIntoView();                        
                             switch (textUpdate.action) {
                                 case "INSERT":
                                     editor.insertText(textUpdate.start, textUpdate.text);
@@ -274,9 +276,7 @@
                             var update;
 
                             if (range.start === range.end) {
-                                var element = document.getElementById("ql-editor-"+editorID);
-                                element.scrollIntoView();                        
-                                update = {
+                               update = {
                                     action: "SYNC",
                                     text: editor.getText()
                                 };
