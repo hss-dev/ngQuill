@@ -211,7 +211,12 @@
                         ngQuillService.lastEditorID = editorID;
                         $log.debug("EDIT text change");
                         var element = document.getElementById("quillEditor-" + editorID);
-                        element.scrollIntoView();
+                        if (element) {
+                            $log.debug("scroll to element");
+                            element.scrollIntoView();
+                        } else {
+                            $log.error("cannot find element to scroll to");
+                        }
                         $scope.$emit('text-change', {
                             delta: delta,
                             source: source
@@ -246,9 +251,12 @@
                             $log.debug("EDIT event found");
                             $log.debug(textUpdate);
                             var element = document.getElementById("quillEditor-" + editorID);
-                            if (element){
+                            if (element) {
+                                $log.debug("scroll to element");
                                 element.scrollIntoView();
-                            }    
+                            } else {
+                                $log.error("cannot find element to scroll to");
+                            }
                             switch (textUpdate.action) {
                                 case "INSERT":
                                     editor.insertText(textUpdate.start, textUpdate.text);
