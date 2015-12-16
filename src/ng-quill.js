@@ -210,7 +210,7 @@
                     editor.on('text-change', function(delta, source) {
                         ngQuillService.lastEditorID = editorID;
                         $log.debug("EDIT text change");
-                        var element = document.getElementById("quillEditor-" + editorID);
+                        var element = document.getElementById("editorJump" + editorID);
                         if (element) {
                             $log.debug("scroll to element");
                             element.scrollIntoView();
@@ -250,7 +250,7 @@
                         if (ngQuillService.lastEditorID === editorID) {
                             $log.debug("EDIT event found");
                             $log.debug(textUpdate);
-                            var element = document.getElementById("quillEditor-" + editorID);
+                            var element = document.getElementById("editorJump" + editorID);
                             if (element) {
                                 $log.debug("scroll to element");
                                 element.scrollIntoView();
