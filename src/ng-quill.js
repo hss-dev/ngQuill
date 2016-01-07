@@ -237,7 +237,7 @@
                             }
 
                             // Send to ws
-                            if (attr.wsaddress && source === 'user') {
+                            if (attr.wsaddress && source === 'user' && $rootScope.quillws) {
                                 delta.ops.forEach(function(entry) {
                                     var textUpdate = $scope.convertOperation(entry);
                                     $rootScope.quillws.send(JSON.stringify(textUpdate));
