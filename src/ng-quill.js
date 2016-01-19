@@ -283,8 +283,12 @@
 
 
                     editor.on('selection-change', function(range, source) {
+                        if (!$rootScope.quillws) {
+                            $log.debug("No quill web socket, so swallowing selection change");
+                            return;
+                        }        
 
-                        if (source === 'user' && range !== null) {
+                        if ((source === 'user' || angular.isUndefined(source)) && range !== null) {
                             ngQuillService.lastEditorID = editorID;
                             var update;
 
