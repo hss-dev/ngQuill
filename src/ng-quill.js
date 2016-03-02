@@ -210,13 +210,17 @@
                     editor.on('text-change', function(delta, source) {
                         ngQuillService.lastEditorID = editorID;
                         $log.debug("EDIT text change");
-                        var element = document.getElementById("editorJump" + editorID);
-                        if (element) {
-                            $log.debug("scroll to element");
-                            element.scrollIntoView();
-                        } else {
-                            $log.error("cannot find element to scroll to");
+                        if ($scope.fromCommand) {
+                            var element = document.getElementById("editorJump" + editorID);
+                            if (element) {
+                                $log.debug("scroll to element");
+                                element.scrollIntoView();
+                            } else {
+                                $log.error("cannot find element to scroll to");
+                            }
                         }
+                        $scope.fromCommand = false;
+
                         $scope.$emit('text-change', {
                             delta: delta,
                             source: source
@@ -248,6 +252,7 @@
 
                     var die = $rootScope.$on("EDIT", function(event, textUpdate) {
                         if (ngQuillService.lastEditorID === editorID) {
+                            $scope.fromCommand = true;    
                             $log.debug("EDIT event found");
                             $log.debug(textUpdate);
                             var element = document.getElementById("editorJump" + editorID);
@@ -286,7 +291,7 @@
                         if (!$rootScope.quillws) {
                             $log.debug("No quill web socket, so swallowing selection change");
                             return;
-                        }        
+                        }
 
                         if ((source === 'user' || angular.isUndefined(source)) && range !== null) {
                             ngQuillService.lastEditorID = editorID;
