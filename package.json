@@ -1,9 +1,10 @@
 {
   "name": "ngQuill",
-  "version": "1.0.7-40",
+  "version": "1.0.7-41",
   "description": "Angular directive for rich text editor Quill",
   "author": "Bnegt Weiße <bengtler@gmail.com>",
   "homepage": "https://github.com/KillerCodeMonkey/ngQuill",
+  "main": "src/ng-quill.js",
   "devDependencies": {
     "amdefine": "^0.1.0",
     "bower": "^1.4.1",
