@@ -206,18 +206,23 @@
 
                     $scope.regEx = /^([2-9]|[1-9][0-9]+)$/;
 
+                    $scope.scroll = function(editorID) {
+                        var element = document.getElementById("editorJump" + editorID);
+                        if (element) {
+                            var alignToTop = ((editorID + 1 - ngQuillService.editors.length) !== 0);
+                            $log.debug("scroll to element, align to top:" + alignToTop);
+                            element.scrollIntoView(alignToTop);
+                        } else {
+                            $log.error("cannot find element to scroll to");
+                        }
+                    };
+
                     // Update model on textchange
                     editor.on('text-change', function(delta, source) {
                         ngQuillService.lastEditorID = editorID;
                         $log.debug("EDIT text change");
                         if ($scope.fromCommand) {
-                            var element = document.getElementById("editorJump" + editorID);
-                            if (element) {
-                                $log.debug("scroll to element");
-                                element.scrollIntoView();
-                            } else {
-                                $log.error("cannot find element to scroll to");
-                            }
+                            $scope.scroll(editorID);
                         }
                         $scope.fromCommand = false;
 
@@ -252,16 +257,10 @@
 
                     var die = $rootScope.$on("EDIT", function(event, textUpdate) {
                         if (ngQuillService.lastEditorID === editorID) {
-                            $scope.fromCommand = true;    
+                            $scope.fromCommand = true;
                             $log.debug("EDIT event found");
                             $log.debug(textUpdate);
-                            var element = document.getElementById("editorJump" + editorID);
-                            if (element) {
-                                $log.debug("scroll to element");
-                                element.scrollIntoView();
-                            } else {
-                                $log.error("cannot find element to scroll to");
-                            }
+                            $scope.scroll(editorID);
                             switch (textUpdate.action) {
                                 case "INSERT":
                                     editor.insertText(textUpdate.start, textUpdate.text);
