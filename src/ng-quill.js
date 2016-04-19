@@ -24,6 +24,18 @@
             'list'
         ];
 
+        this.scroll = function(editorID) {
+            var element = document.getElementById("editorJump" + editorID);
+            if (element) {
+                var alignToTop = ((editorID + 1 - Object.keys(ngQuillService.editors).length) !== 0);
+                $log.debug("scroll to element, align to top:" + alignToTop);
+                element.scrollIntoView(alignToTop);
+            } else {
+                $log.error("cannot find element to scroll to");
+            }
+        };
+
+
         // default translations
         this.defaultTranslation = {
             font: 'Font',
@@ -206,23 +218,12 @@
 
                     $scope.regEx = /^([2-9]|[1-9][0-9]+)$/;
 
-                    $scope.scroll = function(editorID) {
-                        var element = document.getElementById("editorJump" + editorID);
-                        if (element) {
-                            var alignToTop = ((editorID + 1 - Object.keys(ngQuillService.editors).length) !== 0);
-                            $log.debug("scroll to element, align to top:" + alignToTop);
-                            element.scrollIntoView(alignToTop);
-                        } else {
-                            $log.error("cannot find element to scroll to");
-                        }
-                    };
-
                     // Update model on textchange
                     editor.on('text-change', function(delta, source) {
                         ngQuillService.lastEditorID = editorID;
                         $log.debug("EDIT text change");
                         if ($scope.fromCommand) {
-                            $scope.scroll(editorID);
+                            ngQuillService.scroll(editorID);
                         }
                         $scope.fromCommand = false;
 
@@ -260,7 +261,7 @@
                             $scope.fromCommand = true;
                             $log.debug("EDIT event found");
                             $log.debug(textUpdate);
-                            $scope.scroll(editorID);
+                            ngQuillService.scroll(editorID);
                             switch (textUpdate.action) {
                                 case "INSERT":
                                     editor.insertText(textUpdate.start, textUpdate.text);
