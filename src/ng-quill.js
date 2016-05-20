@@ -274,6 +274,7 @@
                                     break;
                                 case "CARETMOVED":
                                     editor.setSelection(textUpdate.start, textUpdate.start);
+                                    editor.insertText(textUpdate.start, "");
                                     break;
                                 default:
                                     $log.error("Unknown action in text update: " + textUpdate.action);
