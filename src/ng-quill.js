@@ -186,6 +186,12 @@
                     }
                     if (attr.focusthis) {
                         editor.focus();
+                        var end = 0;
+                        if (editor.getText && editor.getText()) {
+                            end = editor.getText().length;
+                        }
+                        editor.insertText(end, "");
+
                         ngQuillService.lastEditorID = editorID;
                     }
                     $scope.editorID = editorID;
@@ -269,7 +275,10 @@
                                 case "DELETE":
                                     editor.deleteText(textUpdate.start, textUpdate.start + textUpdate.numChars);
                                     editor.focus();
-                                    var end = editor.getText();
+                                    var end = 0;
+                                    if (editor.getText && editor.getText()) {
+                                        end = editor.getText().length;
+                                    }
                                     editor.insertText(end, "");
                                     break;
                                 case "HIGHLIGHT":
