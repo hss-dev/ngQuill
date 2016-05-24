@@ -268,12 +268,15 @@
                                     break;
                                 case "DELETE":
                                     editor.deleteText(textUpdate.start, textUpdate.start + textUpdate.numChars);
+                                    editor.focus();
+                                    var end = editor.getText();
+                                    editor.insertText(end, "");
                                     break;
                                 case "HIGHLIGHT":
                                     editor.setSelection(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars);
                                     break;
                                 case "CARETMOVED":
-                                    editor.setSelection(textUpdate.start, textUpdate.start);
+                                    //editor.setSelection(textUpdate.start, textUpdate.start);
                                     editor.insertText(textUpdate.start, "");
                                     break;
                                 default:
