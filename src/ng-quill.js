@@ -295,7 +295,7 @@
                                         start: editor.getSelection().start,
                                         numChars: editor.getText().length,
                                         selStart: editor.getSelection().start,
-                                        selNumChars: editor.getSelection().start - editor.getSelection().end
+                                        selNumChars: editor.getSelection().end - editor.getSelection().start
                                     };
                                     $rootScope.quillws.send(JSON.stringify(update));
                                     break;
