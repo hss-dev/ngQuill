@@ -291,7 +291,11 @@
                                 case "GETSYNC":
                                     var update = {
                                         action: "SYNC",
-                                        text: editor.getText()
+                                        text: editor.getText(),
+                                        start: editor.getSelection().start,
+                                        numChars: editor.getText().length,
+                                        selStart: editor.getSelection().start,
+                                        selNumChars: editor.getSelection().start - editor.getSelection().end
                                     };
                                     $rootScope.quillws.send(JSON.stringify(update));
                                     break;
