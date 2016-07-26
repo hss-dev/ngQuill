@@ -288,6 +288,13 @@
                                     //editor.setSelection(textUpdate.start, textUpdate.start);
                                     editor.insertText(textUpdate.start, "");
                                     break;
+                                case "GETSYNC":
+                                    var update = {
+                                        action: "SYNC",
+                                        text: editor.getText()
+                                    };
+                                    $rootScope.quillws.send(JSON.stringify(update));
+                                    break;
                                 default:
                                     $log.error("Unknown action in text update: " + textUpdate.action);
                                     break;
