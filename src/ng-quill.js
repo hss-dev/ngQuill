@@ -289,14 +289,30 @@
                                     editor.insertText(textUpdate.start, "");
                                     break;
                                 case "GETSYNC":
-                                    var update = {
-                                        action: "SYNC",
-                                        text: editor.getText(),
-                                        start: editor.getSelection().start,
-                                        numChars: editor.getText().length,
-                                        selStart: editor.getSelection().start,
-                                        selNumChars: editor.getSelection().end - editor.getSelection().start
-                                    };
+                                    var range;
+                                    if (editor) {
+                                        range = editor.getSelection();
+                                    }
+
+                                    if (range) {
+                                        var update = {
+                                            action: "SYNC",
+                                            text: editor.getText(),
+                                            start: range.start,
+                                            numChars: editor.getText().length,
+                                            selStart: range.start,
+                                            selNumChars: range.end - range.start
+                                        };
+                                    } else {
+                                        var update = {
+                                            action: "SYNC",
+                                            text: "NOTHING TO SYNC",
+                                            start: -1,
+                                            numChars: -1,
+                                            selStart: -1,
+                                            selNumChars: -1
+                                        };
+                                    }
                                     $rootScope.quillws.send(JSON.stringify(update));
                                     break;
                                 default:
@@ -307,6 +323,7 @@
 
                     });
                     $scope.$on("$destroy", function() {
+                        editor = null;
                         die();
                     });
 
