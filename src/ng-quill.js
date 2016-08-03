@@ -298,7 +298,7 @@
                                         var update = {
                                             action: "SYNC",
                                             text: editor.getText(),
-                                            start: range.start,
+											start: range.start + (range.end - range.start),
                                             numChars: editor.getText().length,
                                             selStart: range.start,
                                             selNumChars: range.end - range.start
