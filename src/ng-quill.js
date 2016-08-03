@@ -535,6 +535,7 @@
                 '</div>' +
                 '<div class="editor-container"></div>' +
                 '<input type="text" ng-model="modelLength" id="quillEditor-{{editorID}}" ng-if="required" ng-hide="true" ng-pattern="/^([2-9]|[1-9][0-9]+)$/">' +
+                ' <div id="editorJump{{editorID}}"></div>'+
                 '</div>' +
                 '</div>');
         }
