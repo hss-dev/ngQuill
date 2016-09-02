@@ -184,7 +184,7 @@
                     if (attr.editorid) {
                         editorID = parseInt(attr.editorid);
                     }
-                    if (attr.focusthis) {
+                    if (attr.focusthis === 'true') {
                         editor.focus();
                         var end = 0;
                         if (editor.getText && editor.getText()) {
