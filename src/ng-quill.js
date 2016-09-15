@@ -233,7 +233,7 @@
                         }
                         $scope.fromCommand = false;
 
-                        $scope.$emit('text-change', {
+                        $rootScope.$emit('text-change', {
                             delta: delta,
                             source: source
                         });
