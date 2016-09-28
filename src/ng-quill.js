@@ -413,7 +413,7 @@
 
             // put template in template cache
             return $templateCache.put('ngQuill/template.html',
-                '<div id="editorJump{{editorID}}"></div>'+
+                '<div ng-if="editorID > 0" id="editorJump{{editorID}}"></div>'+
                 '<div id="content-container">' +
                 '<div class="advanced-wrapper">' +
                 '<div class="toolbar toolbar-container" ng-if="toolbar" ng-show="toolbarCreated">' +
