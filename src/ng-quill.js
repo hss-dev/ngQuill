@@ -35,6 +35,17 @@
             }
         };
 
+        this.scrollTop = function(editorID) {
+            var element = document.getElementById("editorJumpTop" + editorID);
+            if (element) {
+                var alignToTop = ((editorID + 1 - Object.keys(ngQuillService.editors).length) !== 0);
+                $log.debug("scroll to element, align to top:" + alignToTop);
+                element.scrollIntoView(alignToTop);
+            } else {
+                $log.error("cannot find element to scroll to");
+            }
+        };
+
 
         // default translations
         this.defaultTranslation = {
@@ -228,10 +239,10 @@
                     editor.on('text-change', function(delta, source) {
                         ngQuillService.lastEditorID = editorID;
                         $log.debug("EDIT text change");
-                        if ($scope.fromCommand) {
-                            ngQuillService.scroll(editorID);
-                        }
-                        $scope.fromCommand = false;
+//                        if ($scope.fromCommand) {
+//                            ngQuillService.scroll(editorID);
+//                        }
+//                        $scope.fromCommand = false;
 
                         $rootScope.$emit('text-change', {
                             delta: delta,
@@ -267,7 +278,7 @@
                             $scope.fromCommand = true;
                             $log.debug("EDIT event found");
                             $log.debug(textUpdate);
-                            ngQuillService.scroll(editorID);
+                            ngQuillService.scrollTop(editorID);
                             switch (textUpdate.action) {
                                 case "INSERT":
                                     editor.insertText(textUpdate.start, textUpdate.text);
@@ -413,7 +424,7 @@
 
             // put template in template cache
             return $templateCache.put('ngQuill/template.html',
-                '<div ng-if="editorID > 0" id="editorJump{{editorID}}"></div>'+
+                '<div ng-if="editorID > 0" id="editorJumpTop{{editorID}}"></div>'+
                 '<div id="content-container">' +
                 '<div class="advanced-wrapper">' +
                 '<div class="toolbar toolbar-container" ng-if="toolbar" ng-show="toolbarCreated">' +
@@ -537,7 +548,9 @@
                 '<div class="editor-container"></div>' +
                 '<input type="text" ng-model="modelLength" id="quillEditor-{{editorID}}" ng-if="required" ng-hide="true" ng-pattern="/^([2-9]|[1-9][0-9]+)$/">' +
                 '</div>' +
-                '</div>');
+                '</div>' +
+                '<div ng-if="editorID > 0" id="editorJump{{editorID}}"></div>');
+
         }
     ]);
 }).call(this);
