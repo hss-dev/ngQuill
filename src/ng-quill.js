@@ -28,10 +28,10 @@
             var element = document.getElementById("editorJump" + editorID);
             if (element) {
                 var alignToTop = ((editorID + 1 - Object.keys(ngQuillService.editors).length) !== 0);
-                $log.debug("scroll to element, align to top:" + alignToTop);
+                console.log("scroll to element, align to top:" + alignToTop);
                 element.scrollIntoView(alignToTop);
             } else {
-                $log.error("cannot find element to scroll to");
+                console.error("cannot find element to scroll to");
             }
         };
 
@@ -39,10 +39,10 @@
             var element = document.getElementById("editorJumpTop" + editorID);
             if (element) {
                 var alignToTop = ((editorID + 1 - Object.keys(ngQuillService.editors).length) !== 0);
-                $log.debug("scroll to element, align to top:" + alignToTop);
+                console.log("scroll to element, align to top:" + alignToTop);
                 element.scrollIntoView(alignToTop);
             } else {
-                $log.error("cannot find element to scroll to");
+                console.log("cannot find element to scroll to");
             }
         };
 
