@@ -408,19 +408,8 @@
     app.run([
         '$templateCache',
         '$rootScope',
-        '$window',
         'ngQuillService',
-        function($templateCache, $rootScope, $window, ngQuillService) {
-
-            // reset all quill editors (to not flood window object works only with ui-router)
-            var die = $rootScope.$on('$locationChangeSuccess', function() {
-                if ($window.Quill && $window.Quill.editors && $window.Quill.editors.length) {
-                    angular.forEach($window.Quill.editors, function(editor) {
-                        editor.destroy();
-                    });
-                }
-            });
-
+        function($templateCache, $rootScope, ngQuillService) {
 
             // put template in template cache
             return $templateCache.put('ngQuill/template.html',
