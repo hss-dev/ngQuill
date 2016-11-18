@@ -240,7 +240,7 @@
                         ngQuillService.lastEditorID = editorID;
                         $log.debug("EDIT text change");
 //                        if ($scope.fromCommand) {
-//                            ngQuillService.scroll(editorID);
+                        ngQuillService.scroll(editorID);
 //                        }
 //                        $scope.fromCommand = false;
 
