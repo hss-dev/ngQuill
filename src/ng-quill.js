@@ -24,10 +24,10 @@
             'list'
         ];
 
-        this.scroll = function(editorID) {
+        this.scrollBottom = function(editorID) {
             var element = document.getElementById("editorJump" + editorID);
             if (element) {
-                var alignToTop = ((editorID + 1 - Object.keys(ngQuillService.editors).length) !== 0);
+                var alignToTop = ((editorID + 1 - Object.keys(this.editors).length) !== 0);
                 console.log("scroll to element, align to top:" + alignToTop);
                 element.scrollIntoView(alignToTop);
             } else {
@@ -38,7 +38,7 @@
         this.scrollTop = function(editorID) {
             var element = document.getElementById("editorJumpTop" + editorID);
             if (element) {
-                var alignToTop = ((editorID + 1 - Object.keys(ngQuillService.editors).length) !== 0);
+                var alignToTop = ((editorID + 1 - Object.keys(this.editors).length) !== 0);
                 console.log("scroll to element, align to top:" + alignToTop);
                 element.scrollIntoView(alignToTop);
             } else {
@@ -50,7 +50,7 @@
         // default translations
         this.defaultTranslation = {
             font: 'Font',
-            size: 'Size',
+            eize: 'Size',
             small: 'Small',
             normal: 'Normal',
             large: 'Large',
@@ -235,14 +235,42 @@
 
                     $scope.regEx = /^([2-9]|[1-9][0-9]+)$/;
 
+                    $scope.whichLine = function(text, insertAt) {
+                        var lines = text.split(/\n/g);
+                        var counter = 0;
+                        var onLine = -1;    
+                        var x = 0;
+                        while (x < lines.length && onLine === -1 ){
+                            counter = counter + lines[x].length;
+                            if (counter >= insertAt) {
+                               onLine = x; 
+                            } else {
+                               x = x + 1;
+                            }
+                        }
+                        if (onLine > -1){
+                            return onLine;
+                        }    
+                        return lines.length;
+                    };
+
                     // Update model on textchange
                     editor.on('text-change', function(delta, source) {
                         ngQuillService.lastEditorID = editorID;
                         $log.debug("EDIT text change");
-//                        if ($scope.fromCommand) {
-                        ngQuillService.scroll(editorID);
-//                        }
-//                        $scope.fromCommand = false;
+                        if (source === "user"){    
+                            var onLine = $scope.whichLine(editor.editor.delta.ops[0].insert, delta.ops[0].retain );
+                            if (onLine > 16) {
+                                ngQuillService.scrollBottom(editorID);
+                            } else {
+                                ngQuillService.scrollTop(editorID);
+                            }
+                        }
+
+                        //                        if ($scope.fromCommand) {
+                        //                         ngQuillService.scroll(editorID);
+                        //                        }
+                        //                        $scope.fromCommand = false;
 
                         $rootScope.$emit('text-change', {
                             delta: delta,
@@ -278,7 +306,6 @@
                             $scope.fromCommand = true;
                             $log.debug("EDIT event found");
                             $log.debug(textUpdate);
-                            ngQuillService.scrollTop(editorID);
                             switch (textUpdate.action) {
                                 case "INSERT":
                                     editor.insertText(textUpdate.start, textUpdate.text);
@@ -309,7 +336,7 @@
                                         var update = {
                                             action: "SYNC",
                                             text: editor.getText(),
-											start: range.start + (range.end - range.start),
+                                            start: range.start + (range.end - range.start),
                                             numChars: editor.getText().length,
                                             selStart: range.start,
                                             selNumChars: range.end - range.start
@@ -413,7 +440,7 @@
 
             // put template in template cache
             return $templateCache.put('ngQuill/template.html',
-                '<div ng-if="editorID > 0" id="editorJumpTop{{editorID}}"></div>'+
+                '<div ng-if="editorID > 0" id="editorJumpTop{{editorID}}"></div>' +
                 '<div id="content-container">' +
                 '<div class="advanced-wrapper">' +
                 '<div class="toolbar toolbar-container" ng-if="toolbar" ng-show="toolbarCreated">' +
@@ -538,7 +565,7 @@
                 '<input type="text" ng-model="modelLength" id="quillEditor-{{editorID}}" ng-if="required" ng-hide="true" ng-pattern="/^([2-9]|[1-9][0-9]+)$/">' +
                 '</div>' +
                 '</div>' +
-                '<div ng-if="editorID > 0" id="editorJump{{editorID}}"></div>');
+                '<div id="editorJump{{editorID}}"></div>');
 
         }
     ]);
