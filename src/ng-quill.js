@@ -240,7 +240,7 @@
                         var x = 0;
                         var posOnLine = 0;    
                         while (x < text.length && x < insertAt){
-                            const oneChar = text.substring(x,x+1);    
+                            var oneChar = text.substring(x,x+1);    
                             var lines = oneChar.split(/\n/g);
                             if (lines.length > 1){
                                line = line + 1;
@@ -314,8 +314,8 @@
                         if (ngQuillService.lastEditorID === editorID) {
                             $scope.fromCommand = true;
                             $log.debug("EDIT event found :"+textUpdate.action);
-                            const allText = editor.container.outerText;     
-                            const charPerLine = editor.root.clientWidth/11.25;
+                            var allText = editor.container.outerText;     
+                            var charPerLine = editor.root.clientWidth/11.25;
                             switch (textUpdate.action) {
                                 case "INSERT":
                                     editor.insertText(textUpdate.start, textUpdate.text);
