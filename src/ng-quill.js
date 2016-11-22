@@ -235,37 +235,46 @@
 
                     $scope.regEx = /^([2-9]|[1-9][0-9]+)$/;
 
-                    $scope.whichLine = function(text, insertAt) {
-                        var lines = text.split(/\n/g);
-                        var counter = 0;
-                        var onLine = -1;    
+                    $scope.whichLine = function(insertAt, text, charPerLine) {
+                        var line = 0;    
                         var x = 0;
-                        while (x < lines.length && onLine === -1 ){
-                            counter = counter + lines[x].length;
-                            if (counter >= insertAt) {
-                               onLine = x; 
+                        var posOnLine = 0;    
+                        while (x < text.length && x < insertAt){
+                            const oneChar = text.substring(x,x+1);    
+                            var lines = oneChar.split(/\n/g);
+                            if (lines.length > 1){
+                               line = line + 1;
+                               posOnLine = 0;
                             } else {
-                               x = x + 1;
+                               posOnLine = posOnLine +1;
                             }
+                            if (posOnLine > charPerLine){
+                               posOnLine = 0;
+                               line = line + 1;     
+                            }    
+                            x = x + 1;
                         }
-                        if (onLine > -1){
-                            return onLine;
-                        }    
-                        return lines.length;
+                        return line;
                     };
+
+                    $scope.scrollScreen = function(postion, allText, charPerLine){
+                        var onLine = $scope.whichLine(postion, allText,charPerLine);
+                        if (onLine > 10) {
+                             ngQuillService.scrollBottom(editorID);
+                        } else {
+                             ngQuillService.scrollTop(editorID);
+                        }
+                    };
+
+
 
                     // Update model on textchange
                     editor.on('text-change', function(delta, source) {
                         ngQuillService.lastEditorID = editorID;
                         $log.debug("EDIT text change");
-                        if (source === "user"){    
-                            var onLine = $scope.whichLine(editor.editor.delta.ops[0].insert, delta.ops[0].retain );
-                            if (onLine > 16) {
-                                ngQuillService.scrollBottom(editorID);
-                            } else {
-                                ngQuillService.scrollTop(editorID);
-                            }
-                        }
+                        //if (source === "user"){    
+                        //    $scope.scrollScreen(editor.editor.delta.ops[0].insert, delta.ops[0].retain);
+                        //}
 
                         //                        if ($scope.fromCommand) {
                         //                         ngQuillService.scroll(editorID);
@@ -304,11 +313,13 @@
                     var die = $rootScope.$on("EDIT", function(event, textUpdate) {
                         if (ngQuillService.lastEditorID === editorID) {
                             $scope.fromCommand = true;
-                            $log.debug("EDIT event found");
-                            $log.debug(textUpdate);
+                            $log.debug("EDIT event found :"+textUpdate.action);
+                            const allText = editor.container.outerText;     
+                            const charPerLine = editor.root.clientWidth/11.25;
                             switch (textUpdate.action) {
                                 case "INSERT":
                                     editor.insertText(textUpdate.start, textUpdate.text);
+                                    $scope.scrollScreen(textUpdate.start, allText,charPerLine);
                                     break;
                                 case "DELETE":
                                     editor.deleteText(textUpdate.start, textUpdate.start + textUpdate.numChars);
@@ -318,13 +329,16 @@
                                         end = editor.getText().length;
                                     }
                                     editor.insertText(end, "");
+                                    $scope.scrollScreen(end, allText,charPerLine);
                                     break;
                                 case "HIGHLIGHT":
                                     editor.setSelection(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars);
+                                    $scope.scrollScreen(textUpdate.selStart + textUpdate.selNumChars, allText, charPerLine);
                                     break;
                                 case "CARETMOVED":
                                     //editor.setSelection(textUpdate.start, textUpdate.start);
                                     editor.insertText(textUpdate.start, "");
+                                    $scope.scrollScreen(textUpdate.selStart + textUpdate.selNumChars, allText, charPerLine);
                                     break;
                                 case "GETSYNC":
                                     var range;
