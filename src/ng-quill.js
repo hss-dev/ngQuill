@@ -236,33 +236,61 @@
                     $scope.regEx = /^([2-9]|[1-9][0-9]+)$/;
 
                     $scope.whichLine = function(insertAt, text, charPerLine) {
-                        var line = 0;    
+                        var line = 0;
                         var x = 0;
-                        var posOnLine = 0;    
-                        while (x < text.length && x < insertAt){
-                            var oneChar = text.substring(x,x+1);    
+                        var posOnLine = 0;
+                        while (x < text.length && x < insertAt) {
+                            var oneChar = text.substring(x, x + 1);
                             var lines = oneChar.split(/\n/g);
-                            if (lines.length > 1){
-                               line = line + 1;
-                               posOnLine = 0;
+                            if (lines.length > 1) {
+                                line = line + 1;
+                                posOnLine = 0;
                             } else {
-                               posOnLine = posOnLine +1;
+                                posOnLine = posOnLine + 1;
                             }
-                            if (posOnLine > charPerLine){
-                               posOnLine = 0;
-                               line = line + 1;     
-                            }    
+                            if (posOnLine > charPerLine) {
+                                posOnLine = 0;
+                                line = line + 1;
+                            }
                             x = x + 1;
                         }
                         return line;
                     };
 
-                    $scope.scrollScreen = function(postion, allText, charPerLine){
-                        var onLine = $scope.whichLine(postion, allText,charPerLine);
-                        if (onLine > 10) {
-                             ngQuillService.scrollBottom(editorID);
+                    $scope.labelFocusedDiv = function(insertAt, html,label) {
+                        var eachBreak = html.split(/<\/?(?:div|p|br)[^>]*>\s*/im);
+                        var totalLength = 0;
+                        var whichDiv = -1;
+                        while (whichDiv < eachBreak.length && totalLength < insertAt) {
+                            whichDiv++;
+                            totalLength = totalLength + eachBreak[whichDiv].length;
+                        }
+                        var output = "";
+                        for (var x = 0; x < eachBreak.length; x++) {
+                            if (eachBreak[x].length > 0) {
+                                if (x === whichDiv) {
+                                    output = output + "<div id='"+label+"'>";
+                                } else {
+                                    output = output + "<div>";
+                                }
+                                output = output + eachBreak[x] + "</div>";
+                            }
+                        }
+                        return output;
+                    };
+
+
+                    $scope.scrollScreen = function(postion, allText, charPerLine) {
+                        var label = "scrollHere";    
+                        var newHTML = $scope.labelFocusedDiv(postion, editor.getHTML(), label);
+                        editor.setHTML(newHTML);
+                        var element = document.getElementById(label);
+                        if (element) {
+                            var alignToTop = ((editorID + 1 - Object.keys(this.editors).length) !== 0);
+                            console.log("scroll to element, align to top:" + alignToTop);
+                            element.scrollIntoView(alignToTop);
                         } else {
-                             ngQuillService.scrollTop(editorID);
+                            console.error("cannot find element to scroll to");
                         }
                     };
 
@@ -270,16 +298,7 @@
 
                     // Update model on textchange
                     editor.on('text-change', function(delta, source) {
-                        ngQuillService.lastEditorID = editorID;
                         $log.debug("EDIT text change");
-                        //if (source === "user"){    
-                        //    $scope.scrollScreen(editor.editor.delta.ops[0].insert, delta.ops[0].retain);
-                        //}
-
-                        //                        if ($scope.fromCommand) {
-                        //                         ngQuillService.scroll(editorID);
-                        //                        }
-                        //                        $scope.fromCommand = false;
 
                         $rootScope.$emit('text-change', {
                             delta: delta,
@@ -313,13 +332,13 @@
                     var die = $rootScope.$on("EDIT", function(event, textUpdate) {
                         if (ngQuillService.lastEditorID === editorID) {
                             $scope.fromCommand = true;
-                            $log.debug("EDIT event found :"+textUpdate.action);
-                            var allText = editor.container.outerText;     
-                            var charPerLine = editor.root.clientWidth/11.25;
+                            $log.debug("EDIT event found :" + textUpdate.action);
+                            var allText = editor.container.outerText;
+                            var charPerLine = editor.root.clientWidth / 11.25;
                             switch (textUpdate.action) {
                                 case "INSERT":
                                     editor.insertText(textUpdate.start, textUpdate.text);
-                                    $scope.scrollScreen(textUpdate.start, allText,charPerLine);
+                                    $scope.scrollScreen(textUpdate.start, allText, charPerLine);
                                     break;
                                 case "DELETE":
                                     editor.deleteText(textUpdate.start, textUpdate.start + textUpdate.numChars);
@@ -329,7 +348,7 @@
                                         end = editor.getText().length;
                                     }
                                     editor.insertText(end, "");
-                                    $scope.scrollScreen(end, allText,charPerLine);
+                                    $scope.scrollScreen(end, allText, charPerLine);
                                     break;
                                 case "HIGHLIGHT":
                                     editor.setSelection(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars);
@@ -386,13 +405,13 @@
                             return;
                         }
 
-                        if (range === null){
+                        if (range === null) {
                             $log.debug("No range for selection");
                         }
-                        var allText = editor.container.outerText;     
-                        var charPerLine = editor.root.clientWidth/11.25;
-                        $scope.scrollScreen(range.end, allText,charPerLine);
- 
+                        var allText = editor.container.outerText;
+                        var charPerLine = editor.root.clientWidth / 11.25;
+                        $scope.scrollScreen(range.end, allText, charPerLine);
+
                         if (source === 'user' || angular.isUndefined(source)) {
                             ngQuillService.lastEditorID = editorID;
                             var update;
