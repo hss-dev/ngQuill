@@ -292,6 +292,7 @@
                         } else {
                             console.error("cannot find element to scroll to");
                         }
+                        editor.insertText(postion, "");
                     };
 
 
