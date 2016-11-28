@@ -286,7 +286,7 @@
                         editor.setHTML(newHTML);
                         var element = document.getElementById(label);
                         if (element) {
-                            var alignToTop = ((editorID + 1 - Object.keys(this.editors).length) !== 0);
+                            var alignToTop = false; // ((editorID + 1 - Object.keys(this.editors).length) !== 0);
                             console.log("scroll to element, align to top:" + alignToTop);
                             element.scrollIntoView(alignToTop);
                         } else {
