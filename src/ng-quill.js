@@ -272,7 +272,7 @@
                             whichDiv++;
                         }
                         var output = "";
-                        if (whichDiv === eachBreak.length){
+                        if (whichDiv === eachBreak.length) {
                             console.log("Last div");
                             whichDiv--;
                         }
@@ -288,10 +288,11 @@
                     };
 
 
-                    $scope.scrollScreen = function(postion, end, charPerLine) {
+                    $scope.scrollScreen = function(postion, end, charPerLine, moveCursor) {
                         var label = "scrollHere";
                         var newHTML = $scope.labelFocusedDiv(postion, editor.getHTML(), label);
                         editor.setHTML(newHTML);
+                        editor.focus();
                         var element = document.getElementById(label);
                         if (element) {
                             var alignToTop = false; // ((editorID + 1 - Object.keys(this.editors).length) !== 0);
@@ -300,8 +301,9 @@
                         } else {
                             console.error("cannot find element to scroll to");
                         }
-                        editor.insertText(end, "");
-//                        editor.focus();
+                        if (moveCursor) {
+                            editor.insertText(end, "");
+                        }
                     };
 
 
@@ -357,17 +359,16 @@
                                         end = editor.getText().length;
                                     }
                                     editor.insertText(end, "");
-                                    $scope.scrollScreen(end, end, charPerLine);
+                                    $scope.scrollScreen(end, end, charPerLine, true);
                                     break;
                                 case "HIGHLIGHT":
+                                    $scope.scrollScreen(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars, charPerLine, true);
                                     editor.setSelection(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars);
-                                    editor.focus();
-                                    $scope.scrollScreen(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars, charPerLine);
                                     break;
                                 case "CARETMOVED":
                                     //editor.setSelection(textUpdate.start, textUpdate.start);
                                     editor.insertText(textUpdate.start, "");
-                                    $scope.scrollScreen(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars, charPerLine);
+                                    $scope.scrollScreen(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars, charPerLine, true);
                                     break;
                                 case "GETSYNC":
                                     var range;
