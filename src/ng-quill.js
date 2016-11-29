@@ -101,7 +101,8 @@
         '$rootScope',
         '$location',
         '$log',
-        function($timeout, ngQuillService, $websocket, $rootScope, $location, $log) {
+        '$window',    
+        function($timeout, ngQuillService, $websocket, $rootScope, $location, $log, $window) {
             return {
                 scope: {
                     'toolbarEntries': '@?',
@@ -254,16 +255,21 @@
                             }    
                             x = x + 1;
                         }
-                        return line;
+                            
+                        return {x:posOnLine,y:line};
                     };
 
                     $scope.scrollScreen = function(postion, allText, charPerLine){
-                        var onLine = $scope.whichLine(postion, allText,charPerLine);
-                        if (onLine > 22) {
-                             ngQuillService.scrollBottom(editorID);
-                        } else {
-                             ngQuillService.scrollTop(editorID);
-                        }
+                        var coord = $scope.whichLine(postion, allText,charPerLine);
+                        var y = 362 + (coord.y*23);    
+                        var x = 36 + (coord.x*12);    
+                        $window.scroll(x,y);
+                            
+                        //if (onLine.x > 22) {
+                        //     ngQuillService.scrollBottom(editorID);
+                        //} else {
+                        //     ngQuillService.scrollTop(editorID);
+                        //}
                     };
 
 
