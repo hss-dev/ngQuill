@@ -292,7 +292,6 @@
                         var label = "scrollHere";
                         var newHTML = $scope.labelFocusedDiv(postion, editor.getHTML(), label);
                         editor.setHTML(newHTML);
-                        editor.focus();
                         var element = document.getElementById(label);
                         if (element) {
                             var alignToTop = false; // ((editorID + 1 - Object.keys(this.editors).length) !== 0);
@@ -302,7 +301,9 @@
                             console.error("cannot find element to scroll to");
                         }
                         if (moveCursor) {
-                            editor.insertText(end, "");
+                            //editor.insertText(end, "");
+                            var textUpdate = {action:"CARETMOVED",start:postion};
+                            $rootScope.$emit("EDIT", textUpdate);
                         }
                     };
 
@@ -354,7 +355,6 @@
                                 case "DELETE":
                                     $scope.scrollScreen(end, end, charPerLine, true);
                                     editor.deleteText(textUpdate.start, textUpdate.start + textUpdate.numChars);
-                                    editor.focus();
                                     var end = 0;
                                     if (editor.getText && editor.getText()) {
                                         end = editor.getText().length;
@@ -367,7 +367,7 @@
                                     break;
                                 case "CARETMOVED":
                                     //editor.setSelection(textUpdate.start, textUpdate.start);
-                                    $scope.scrollScreen(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars, charPerLine, true);
+                                    //$scope.scrollScreen(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars, charPerLine, true);
                                     editor.insertText(textUpdate.start, "");
                                     break;
                                 case "GETSYNC":
