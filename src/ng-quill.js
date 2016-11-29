@@ -29,7 +29,7 @@
             if (element) {
                 var alignToTop = ((editorID + 1 - Object.keys(this.editors).length) !== 0);
                 console.log("scroll to element, align to top:" + alignToTop);
-                element.scrollIntoView(alignToTop);
+                element.scrollIntoViewIfNeeded(alignToTop);
             } else {
                 console.error("cannot find element to scroll to");
             }
@@ -40,7 +40,7 @@
             if (element) {
                 var alignToTop = ((editorID + 1 - Object.keys(this.editors).length) !== 0);
                 console.log("scroll to element, align to top:" + alignToTop);
-                element.scrollIntoView(alignToTop);
+                element.scrollIntoViewIfNeeded(alignToTop);
             } else {
                 console.log("cannot find element to scroll to");
             }
@@ -259,7 +259,7 @@
 
                     $scope.scrollScreen = function(postion, allText, charPerLine){
                         var onLine = $scope.whichLine(postion, allText,charPerLine);
-                        if (onLine > 10) {
+                        if (onLine > 22) {
                              ngQuillService.scrollBottom(editorID);
                         } else {
                              ngQuillService.scrollTop(editorID);
