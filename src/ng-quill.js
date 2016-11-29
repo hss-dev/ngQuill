@@ -389,9 +389,6 @@
                         if (range === null){
                             $log.debug("No range for selection");
                         }
-                        var allText = editor.container.outerText;     
-                        var charPerLine = editor.root.clientWidth/11.25;
-                        $scope.scrollScreen(range.end, allText,charPerLine);
  
                         if (source === 'user' || angular.isUndefined(source)) {
                             ngQuillService.lastEditorID = editorID;
