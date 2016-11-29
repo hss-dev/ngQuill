@@ -257,31 +257,39 @@
                         return line;
                     };
 
-                    $scope.labelFocusedDiv = function(insertAt, html,label) {
-                        var eachBreak = html.split(/<\/?(?:div|p|br)[^>]*>\s*/im);
+                    $scope.labelFocusedDiv = function(insertAt, html, label) {
+                        var eachBreakWithSpaces = html.split(/<\/?(?:div|p|br)[^>]*>\s*/im);
+                        var eachBreak = [];
+                        for (var x = 0; x < eachBreakWithSpaces.length; x++) {
+                            if (eachBreakWithSpaces[x].length > 0) {
+                                eachBreak.push(eachBreakWithSpaces[x]);
+                            }
+                        }
                         var totalLength = 0;
-                        var whichDiv = -1;
+                        var whichDiv = 0;
                         while (whichDiv < eachBreak.length && totalLength < insertAt) {
-                            whichDiv++;
                             totalLength = totalLength + eachBreak[whichDiv].length;
+                            whichDiv++;
                         }
                         var output = "";
+                        if (whichDiv === eachBreak.length){
+                            console.log("Last div");
+                            whichDiv--;
+                        }
                         for (var x = 0; x < eachBreak.length; x++) {
-                            if (eachBreak[x].length > 0) {
-                                if (x === whichDiv) {
-                                    output = output + "<div id='"+label+"'>";
-                                } else {
-                                    output = output + "<div>";
-                                }
-                                output = output + eachBreak[x] + "</div>";
+                            if (x === whichDiv) {
+                                output = output + "<div id='" + label + "'>";
+                            } else {
+                                output = output + "<div>";
                             }
+                            output = output + eachBreak[x] + "</div>";
                         }
                         return output;
                     };
 
 
-                    $scope.scrollScreen = function(postion, allText, charPerLine) {
-                        var label = "scrollHere";    
+                    $scope.scrollScreen = function(postion, end, charPerLine) {
+                        var label = "scrollHere";
                         var newHTML = $scope.labelFocusedDiv(postion, editor.getHTML(), label);
                         editor.setHTML(newHTML);
                         var element = document.getElementById(label);
@@ -292,7 +300,8 @@
                         } else {
                             console.error("cannot find element to scroll to");
                         }
-                        editor.insertText(postion, "");
+                        editor.insertText(end, "");
+//                        editor.focus();
                     };
 
 
@@ -334,12 +343,11 @@
                         if (ngQuillService.lastEditorID === editorID) {
                             $scope.fromCommand = true;
                             $log.debug("EDIT event found :" + textUpdate.action);
-                            var allText = editor.container.outerText;
                             var charPerLine = editor.root.clientWidth / 11.25;
                             switch (textUpdate.action) {
                                 case "INSERT":
                                     editor.insertText(textUpdate.start, textUpdate.text);
-                                    $scope.scrollScreen(textUpdate.start, allText, charPerLine);
+                                    $scope.scrollScreen(textUpdate.start, textUpdate.start + textUpdate.text.length, charPerLine, true);
                                     break;
                                 case "DELETE":
                                     editor.deleteText(textUpdate.start, textUpdate.start + textUpdate.numChars);
@@ -349,16 +357,17 @@
                                         end = editor.getText().length;
                                     }
                                     editor.insertText(end, "");
-                                    $scope.scrollScreen(end, allText, charPerLine);
+                                    $scope.scrollScreen(end, end, charPerLine);
                                     break;
                                 case "HIGHLIGHT":
                                     editor.setSelection(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars);
-                                    $scope.scrollScreen(textUpdate.selStart + textUpdate.selNumChars, allText, charPerLine);
+                                    editor.focus();
+                                    $scope.scrollScreen(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars, charPerLine);
                                     break;
                                 case "CARETMOVED":
                                     //editor.setSelection(textUpdate.start, textUpdate.start);
                                     editor.insertText(textUpdate.start, "");
-                                    $scope.scrollScreen(textUpdate.selStart + textUpdate.selNumChars, allText, charPerLine);
+                                    $scope.scrollScreen(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars, charPerLine);
                                     break;
                                 case "GETSYNC":
                                     var range;
@@ -409,9 +418,8 @@
                         if (range === null) {
                             $log.debug("No range for selection");
                         }
-                        var allText = editor.container.outerText;
-                        var charPerLine = editor.root.clientWidth / 11.25;
-                        $scope.scrollScreen(range.end, allText, charPerLine);
+                        //var charPerLine = editor.root.clientWidth / 11.25;
+                        //$scope.scrollScreen(range.end, charPerLine);
 
                         if (source === 'user' || angular.isUndefined(source)) {
                             ngQuillService.lastEditorID = editorID;
