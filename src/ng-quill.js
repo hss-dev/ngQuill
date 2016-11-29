@@ -348,10 +348,11 @@
                             var charPerLine = editor.root.clientWidth / 11.25;
                             switch (textUpdate.action) {
                                 case "INSERT":
-                                    editor.insertText(textUpdate.start, textUpdate.text);
                                     $scope.scrollScreen(textUpdate.start, textUpdate.start + textUpdate.text.length, charPerLine, true);
+                                    editor.insertText(textUpdate.start, textUpdate.text);
                                     break;
                                 case "DELETE":
+                                    $scope.scrollScreen(end, end, charPerLine, true);
                                     editor.deleteText(textUpdate.start, textUpdate.start + textUpdate.numChars);
                                     editor.focus();
                                     var end = 0;
@@ -359,7 +360,6 @@
                                         end = editor.getText().length;
                                     }
                                     editor.insertText(end, "");
-                                    $scope.scrollScreen(end, end, charPerLine, true);
                                     break;
                                 case "HIGHLIGHT":
                                     $scope.scrollScreen(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars, charPerLine, true);
@@ -367,8 +367,8 @@
                                     break;
                                 case "CARETMOVED":
                                     //editor.setSelection(textUpdate.start, textUpdate.start);
-                                    editor.insertText(textUpdate.start, "");
                                     $scope.scrollScreen(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars, charPerLine, true);
+                                    editor.insertText(textUpdate.start, "");
                                     break;
                                 case "GETSYNC":
                                     var range;
