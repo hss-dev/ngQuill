@@ -339,7 +339,7 @@
                                 case "CARETMOVED":
                                     //editor.setSelection(textUpdate.start, textUpdate.start);
                                     editor.insertText(textUpdate.start, "");
-                                    $scope.scrollScreen(textUpdate.selStart + textUpdate.selNumChars, allText, charPerLine);
+                                    $scope.scrollScreen(textUpdate.start, allText, charPerLine);
                                     break;
                                 case "GETSYNC":
                                     var range;
@@ -390,6 +390,11 @@
                         if (range === null){
                             $log.debug("No range for selection");
                         }
+
+                        var allText = editor.container.outerText;     
+                        var allText = editor.container.outerText;     
+                        var charPerLine = editor.root.clientWidth/11.25;
+                        $scope.scrollScreen(range.start, allText,charPerLine);
  
                         if (source === 'user' || angular.isUndefined(source)) {
                             ngQuillService.lastEditorID = editorID;
@@ -413,12 +418,7 @@
                                 };
                             }
                             $rootScope.quillws.send(JSON.stringify(update));
-                        } else if (source === 'api') {
-                            var allText = editor.container.outerText;     
-                            var allText = editor.container.outerText;     
-                            var charPerLine = editor.root.clientWidth/11.25;
-                            $scope.scrollScreen(range.start, allText,charPerLine);
-                        } else {        
+                       } else {        
                             $log.debug("Focus has gone");
                         }
 
