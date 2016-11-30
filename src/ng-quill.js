@@ -282,15 +282,6 @@
                     editor.on('text-change', function(delta, source) {
                         ngQuillService.lastEditorID = editorID;
                         $log.debug("EDIT text change");
-                        //if (source === "user"){    
-                        //    $scope.scrollScreen(editor.editor.delta.ops[0].insert, delta.ops[0].retain);
-                        //}
-
-                        //                        if ($scope.fromCommand) {
-                        //                         ngQuillService.scroll(editorID);
-                        //                        }
-                        //                        $scope.fromCommand = false;
-
                         $rootScope.$emit('text-change', {
                             delta: delta,
                             source: source
@@ -422,7 +413,12 @@
                                 };
                             }
                             $rootScope.quillws.send(JSON.stringify(update));
-                        } else {
+                        } else if (source === 'api') {
+                            var allText = editor.container.outerText;     
+                            var allText = editor.container.outerText;     
+                            var charPerLine = editor.root.clientWidth/11.25;
+                            $scope.scrollScreen(range.start, allText,charPerLine);
+                        } else {        
                             $log.debug("Focus has gone");
                         }
 
