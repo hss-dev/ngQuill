@@ -29,7 +29,7 @@
             if (element) {
                 var alignToTop = ((editorID + 1 - Object.keys(this.editors).length) !== 0);
                 console.log("scroll to element, align to top:" + alignToTop);
-                element.scrollIntoViewIfNeeded(alignToTop);
+                element.scrollIntoView(alignToTop);
             } else {
                 console.error("cannot find element to scroll to");
             }
@@ -40,7 +40,7 @@
             if (element) {
                 var alignToTop = ((editorID + 1 - Object.keys(this.editors).length) !== 0);
                 console.log("scroll to element, align to top:" + alignToTop);
-                element.scrollIntoViewIfNeeded(alignToTop);
+                element.scrollIntoView(alignToTop);
             } else {
                 console.log("cannot find element to scroll to");
             }
@@ -260,16 +260,20 @@
                     };
 
                     $scope.scrollScreen = function(postion, allText, charPerLine){
+                        var bodyRect = document.body.getBoundingClientRect();
+                        var element = document.getElementById("editorJumpTop" + editorID);
+                        var elemRect = element.getBoundingClientRect();    
+                        var offset   = elemRect.top - bodyRect.top;
+                        var startY = offset + 71;
+
                         var coord = $scope.whichLine(postion, allText,charPerLine);
-                        var y = 362 + (coord.y*23);    
-                        var x = 36 + (coord.x*12);    
-                        $window.scroll(x,y);
-                            
-                        //if (onLine.x > 22) {
-                        //     ngQuillService.scrollBottom(editorID);
-                        //} else {
-                        //     ngQuillService.scrollTop(editorID);
-                        //}
+                        if (coord.y < 22) {
+                            ngQuillService.scrollTop(editorID);
+                        } else {    
+                            var y = startY + (coord.y*23);    
+                            var x = 36 + (coord.x*12);    
+                            $window.scroll(x,y);
+                        }        
                     };
 
 
@@ -465,6 +469,7 @@
             // put template in template cache
             return $templateCache.put('ngQuill/template.html',
                 '<div ng-if="editorID > 0" id="editorJumpTop{{editorID}}"></div>' +
+                '<div ng-if="editorID === 0" id="editorJumpFirstTop"></div>' +
                 '<div id="content-container">' +
                 '<div class="advanced-wrapper">' +
                 '<div class="toolbar toolbar-container" ng-if="toolbar" ng-show="toolbarCreated">' +
