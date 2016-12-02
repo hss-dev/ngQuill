@@ -101,7 +101,7 @@
         '$rootScope',
         '$location',
         '$log',
-        '$window',    
+        '$window',
         function($timeout, ngQuillService, $websocket, $rootScope, $location, $log, $window) {
             return {
                 scope: {
@@ -236,44 +236,70 @@
 
                     $scope.regEx = /^([2-9]|[1-9][0-9]+)$/;
 
-                    $scope.whichLine = function(insertAt, text, charPerLine) {
-                        var line = 0;    
+                    $scope.lines = function(insertAt, text, charPerLine) {
+                        var line = 0;
                         var x = 0;
-                        var posOnLine = 0;    
-                        while (x < text.length && x < insertAt){
-                            var oneChar = text.substring(x,x+1);    
+                        var posOnLine = 0;
+                        while (x < text.length && x < insertAt) {
+                            var oneChar = text.substring(x, x + 1);
                             var lines = oneChar.split(/\n/g);
-                            if (lines.length > 1){
-                               line = line + 1;
-                               posOnLine = 0;
+                            if (lines.length > 1) {
+                                line = line + 1;
+                                posOnLine = 0;
                             } else {
-                               posOnLine = posOnLine +1;
+                                posOnLine = posOnLine + 1;
                             }
-                            if (posOnLine > charPerLine){
-                               posOnLine = 0;
-                               line = line + 1;     
-                            }    
+                            if (posOnLine > charPerLine) {
+                                posOnLine = 0;
+                                line = line + 1;
+                            }
                             x = x + 1;
                         }
-                            
-                        return {x:posOnLine,y:line};
+
+                        return {
+                            xPos: posOnLine,
+                            qty: line
+                        };
                     };
 
-                    $scope.scrollScreen = function(postion, allText, charPerLine){
-                        var bodyRect = document.body.getBoundingClientRect();
-                        var element = document.getElementById("editorJumpTop" + editorID);
-                        var elemRect = element.getBoundingClientRect();    
-                        var offset   = elemRect.top - bodyRect.top;
-                        var startY = offset + 71;
+                    $scope.getScreenHeight = function() {
+                        var top = $window.pageYOffset;
+                        var bot = $window.innerHeight + $window.pageYOffset;
+                        var height = bot - top;
+                        var quort = height / 4;    
+                        return {
+                            top: top,
+                            bottom: bot,
+                            height: height,
+                            quort: quort    
+                        };
+                    };
 
-                        var coord = $scope.whichLine(postion, allText,charPerLine);
-                        if (coord.y < 22) {
-                            ngQuillService.scrollTop(editorID);
-                        } else {    
-                            var y = startY + (coord.y*23);    
-                            var x = 36 + (coord.x*12);    
-                            $window.scroll(x,y);
-                        }        
+                    $scope.topOfEditor = function(){
+                         var element = document.getElementById("editorJumpTop" + editorID);
+                        if (editorID === 0) {
+                            element = document.getElementById("editorJumpFirstTop");
+                        }
+                        return element.offsetTop;    
+                    };
+
+                    $scope.scrollScreen = function(postion, allText, charPerLine) {
+                        var firstCharX = 36;    
+                        var lineHeight = 37;
+                        var charWidth = 12;
+
+                        var screenHeight = $scope.getScreenHeight();
+                        var editorTop = $scope.topOfEditor();    
+                        var lines = $scope.lines(postion, allText, charPerLine);
+
+                        var firstLineY = editorTop + 71;
+                        var firstLineOffSet = firstLineY - screenHeight.quort;    
+                        var y = firstLineOffSet + (lines.qty * lineHeight);
+
+                        if (screenHeight.top <= y || screenHeight.bottom >= y) {
+                            var x = firstCharX + (lines.xPos * charWidth);
+                            $window.scroll(x, y);
+                        }
                     };
 
 
@@ -314,13 +340,13 @@
                     var die = $rootScope.$on("EDIT", function(event, textUpdate) {
                         if (ngQuillService.lastEditorID === editorID) {
                             $scope.fromCommand = true;
-                            $log.debug("EDIT event found :"+textUpdate.action);
-                            var allText = editor.container.outerText;     
-                            var charPerLine = editor.root.clientWidth/11.25;
+                            $log.debug("EDIT event found :" + textUpdate.action);
+                            var allText = editor.container.outerText;
+                            var charPerLine = editor.root.clientWidth / 11.25;
                             switch (textUpdate.action) {
                                 case "INSERT":
                                     editor.insertText(textUpdate.start, textUpdate.text);
-                                    $scope.scrollScreen(textUpdate.start, allText,charPerLine);
+                                    $scope.scrollScreen(textUpdate.start, allText, charPerLine);
                                     break;
                                 case "DELETE":
                                     editor.deleteText(textUpdate.start, textUpdate.start + textUpdate.numChars);
@@ -330,7 +356,7 @@
                                         end = editor.getText().length;
                                     }
                                     editor.insertText(end, "");
-                                    $scope.scrollScreen(end, allText,charPerLine);
+                                    $scope.scrollScreen(end, allText, charPerLine);
                                     break;
                                 case "HIGHLIGHT":
                                     editor.setSelection(textUpdate.selStart, textUpdate.selStart + textUpdate.selNumChars);
@@ -387,15 +413,15 @@
                             return;
                         }
 
-                        if (range === null){
+                        if (range === null) {
                             $log.debug("No range for selection");
                         }
 
-                        var allText = editor.container.outerText;     
-                        var allText = editor.container.outerText;     
-                        var charPerLine = editor.root.clientWidth/11.25;
-                        $scope.scrollScreen(range.start, allText,charPerLine);
- 
+                        var allText = editor.container.outerText;
+                        var allText = editor.container.outerText;
+                        var charPerLine = editor.root.clientWidth / 11.25;
+                        $scope.scrollScreen(range.start, allText, charPerLine);
+
                         if (source === 'user' || angular.isUndefined(source)) {
                             ngQuillService.lastEditorID = editorID;
                             var update;
@@ -418,7 +444,7 @@
                                 };
                             }
                             $rootScope.quillws.send(JSON.stringify(update));
-                       } else {        
+                        } else {
                             $log.debug("Focus has gone");
                         }
 
