@@ -1,6 +1,6 @@
 {
   "name": "ngQuill",
-  "version": "1.0.7-92",
+  "version": "1.0.7-93",
   "main": [
     "src/ng-quill.min.js"
   ],
