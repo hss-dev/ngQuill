@@ -266,35 +266,49 @@
                         var top = $window.pageYOffset;
                         var bot = $window.innerHeight + $window.pageYOffset;
                         var height = bot - top;
-                        var quort = height / 4;    
+                        var quort = height / 4;
                         return {
                             top: top,
                             bottom: bot,
                             height: height,
-                            quort: quort    
+                            quort: quort
                         };
                     };
 
-                    $scope.topOfEditor = function(){
-                         var element = document.getElementById("editorJumpTop" + editorID);
+                    $scope.topOfEditor = function() {
+                        var element = document.getElementById("editorJumpTop" + editorID);
                         if (editorID === 0) {
                             element = document.getElementById("editorJumpFirstTop");
                         }
-                        return element.offsetTop;    
+                        return element.offsetTop;
                     };
 
+
+
                     $scope.scrollScreen = function(postion, allText, charPerLine) {
-                        var firstCharX = 36;    
+                        var firstCharX = 36;
                         var lineHeight = 37;
                         var charWidth = 12;
 
                         var screenHeight = $scope.getScreenHeight();
-                        var editorTop = $scope.topOfEditor();    
+                        var editorTop = $scope.topOfEditor();
                         var lines = $scope.lines(postion, allText, charPerLine);
 
                         var firstLineY = editorTop + 71;
-                        var firstLineOffSet = firstLineY - screenHeight.quort;    
+                        var firstLineOffSet = firstLineY - screenHeight.quort;
                         var y = firstLineOffSet + (lines.qty * lineHeight);
+
+                        $log.debug("  ========================== ");
+                        $log.debug("SCROLL: Screen height");
+                        $log.debug(screenHeight);
+
+                        $log.debug("SCROLL: Editor top         - " + editorTop);
+                        $log.debug("SCROLL: First line off set - " + firstLineOffSet);
+                        $log.debug("SCROLL: line");
+                        $log.debug(line);
+
+                        $log.debug("SCROLL: to y               - " + y);
+                        $log.debug("  ************************** ");
 
                         if (screenHeight.top <= y || screenHeight.bottom >= y) {
                             var x = firstCharX + (lines.xPos * charWidth);
