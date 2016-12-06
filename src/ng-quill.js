@@ -305,7 +305,7 @@
                         $log.debug("SCROLL: Editor top         - " + editorTop);
                         $log.debug("SCROLL: First line off set - " + firstLineOffSet);
                         $log.debug("SCROLL: line");
-                        $log.debug(line);
+                        $log.debug(lines);
 
                         $log.debug("SCROLL: to y               - " + y);
                         $log.debug("  ************************** ");
