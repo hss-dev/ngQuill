@@ -280,12 +280,16 @@
                         if (editorID === 0) {
                             element = document.getElementById("editorJumpFirstTop");
                         }
-                        return element.offsetTop;
+                        var editorRect = element.getBoundingClientRect();    
+                        $log.debug("SCROLL: top id rect ");
+                        $log.debug(editorRect);
+                        return editorRect.top;
                     };
 
 
 
                     $scope.scrollScreen = function(postion, allText, charPerLine) {
+                        $log.debug("  ========================== ");
                         var firstCharX = 36;
                         var lineHeight = 37;
                         var charWidth = 12;
@@ -298,7 +302,6 @@
                         var firstLineOffSet = firstLineY - screenHeight.quort;
                         var y = firstLineOffSet + (lines.qty * lineHeight);
 
-                        $log.debug("  ========================== ");
                         $log.debug("SCROLL: Screen height");
                         $log.debug(screenHeight);
 
