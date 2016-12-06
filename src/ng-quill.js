@@ -313,7 +313,7 @@
                         $log.debug("SCROLL: to y               - " + y);
                         $log.debug("  ************************** ");
 
-                        if (y >= screenHeight.top && y <= screenHeight.bottom >= y) {
+                        if (y >= screenHeight.top && y <= screenHeight.bottom) {
                            $log.debug("SCROLL: No need to scroll as "+y+" is already on screen (between "+screenHeight.top+" - "+screenHeight.bottom+")");
                         } else {        
                             var x = firstCharX + (lines.xPos * charWidth);
