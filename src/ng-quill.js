@@ -267,11 +267,13 @@
                         var bot = $window.innerHeight + $window.pageYOffset;
                         var height = bot - top;
                         var quort = height / 4;
+                        var gapToEditor = (height /100)*14.79;
                         return {
                             top: top,
                             bottom: bot,
                             height: height,
-                            quort: quort
+                            quort: quort,
+                            gap: gapToEditor    
                         };
                     };
 
@@ -286,39 +288,50 @@
                         return editorRect.top;
                     };
 
+                    $scope.bottomOfBanner = function() {
+                        var element = document.getElementById("patient-banner");
+                        var editorRect = element.getBoundingClientRect();    
+                        return editorRect.bottom;
+                    };
+
 
 
                     $scope.scrollScreen = function(postion, allText, charPerLine) {
                         $log.debug("  ========================== ");
                         var firstCharX = 36;
-                        var lineHeight = 37;
+                        var lineHeight = 16;
                         var charWidth = 12;
 
                         var screenHeight = $scope.getScreenHeight();
                         var editorTop = $scope.topOfEditor();
+
+                        var absoluteFirstLine = (screenHeight.top + editorTop)+71;
+
                         var lines = $scope.lines(postion, allText, charPerLine);
+                        var scrollLine = lines.qty * lineHeight;    
 
                         var firstLineY = editorTop + 71;
-                        var firstLineOffSet = firstLineY - screenHeight.quort;
-                        var y = firstLineOffSet + (lines.qty * lineHeight);
+                        var firstLineOffSet = firstLineY - (lineHeight*3);
+                            
+                        var y = absoluteFirstLine + scrollLine - (lineHeight + $scope.bottomOfBanner());
+                        var yDisplay = y + (33*lineHeight);
 
                         $log.debug("SCROLL: Screen height");
                         $log.debug(screenHeight);
 
                         $log.debug("SCROLL: Editor top         - " + editorTop);
-                        $log.debug("SCROLL: First line off set - " + firstLineOffSet);
-                        $log.debug("SCROLL: line");
-                        $log.debug(lines);
+                        $log.debug("SCROLL: absoluteFirstLine  - " + absoluteFirstLine);
+                        $log.debug("SCROLL: scrollLine         - " + scrollLine);
+                        $log.debug("SCROLL: to                 - " + y);
 
-                        $log.debug("SCROLL: to y               - " + y);
-                        $log.debug("  ************************** ");
-
-                        if (y >= screenHeight.top && y <= screenHeight.bottom) {
-                           $log.debug("SCROLL: No need to scroll as "+y+" is already on screen (between "+screenHeight.top+" - "+screenHeight.bottom+")");
+                        if (yDisplay >= screenHeight.top && yDisplay <= screenHeight.bottom) {
+                           $log.debug("SCROLL: No scroll as "+yDisplay+" is on screen (between "+screenHeight.top+" - "+screenHeight.bottom+")");
                         } else {        
-                            var x = firstCharX + (lines.xPos * charWidth);
-                            $window.scroll(x, y);
+                           var x = firstCharX + (lines.xPos * charWidth);
+                           $log.debug("SCROLL: To              - ("+x+","+y+") ");
+                           $window.scrollTo(x, y);
                         }
+                        $log.debug("  ************************** ");
                     };
 
 
