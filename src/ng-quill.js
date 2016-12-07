@@ -299,32 +299,29 @@
                     $scope.scrollScreen = function(postion, allText, charPerLine) {
                         $log.debug("  ========================== ");
                         var firstCharX = 36;
-                        var lineHeight = 16;
+                        var lineHeight = 20;
                         var charWidth = 12;
 
                         var screenHeight = $scope.getScreenHeight();
                         var editorTop = $scope.topOfEditor();
+                        var lines = $scope.lines(postion, allText, charPerLine);
 
                         var absoluteFirstLine = (screenHeight.top + editorTop)+71;
-
-                        var lines = $scope.lines(postion, allText, charPerLine);
                         var scrollLine = lines.qty * lineHeight;    
-
-                        var firstLineY = editorTop + 71;
-                        var firstLineOffSet = firstLineY - (lineHeight*3);
                             
                         var y = absoluteFirstLine + scrollLine - (lineHeight + $scope.bottomOfBanner());
-                        var yDisplay = y + (33*lineHeight);
+                        var yDisplay = y + (1*lineHeight);
 
                         $log.debug("SCROLL: Screen height");
                         $log.debug(screenHeight);
-
+                        $log.debug("SCROLL: lines");
+                        $log.debug(lines);
                         $log.debug("SCROLL: Editor top         - " + editorTop);
                         $log.debug("SCROLL: absoluteFirstLine  - " + absoluteFirstLine);
                         $log.debug("SCROLL: scrollLine         - " + scrollLine);
                         $log.debug("SCROLL: to                 - " + y);
 
-                        if (yDisplay >= screenHeight.top && yDisplay <= screenHeight.bottom) {
+                        if (yDisplay >= screenHeight.top && (yDisplay+ (15*lineHeight)) <= screenHeight.bottom) {
                            $log.debug("SCROLL: No scroll as "+yDisplay+" is on screen (between "+screenHeight.top+" - "+screenHeight.bottom+")");
                         } else {        
                            var x = firstCharX + (lines.xPos * charWidth);
