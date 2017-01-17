@@ -206,7 +206,7 @@
 
                         if (ngQuillService.lastEditorID !== editorID) {
                             ngQuillService.lastEditorID = editorID;
-                            $scope.$emit('editorChanged', editorID);
+                            $rootScope.$emit('editorChanged', editorID);
                         }
                     }
                     $scope.editorID = editorID;
@@ -340,7 +340,7 @@
                     editor.on('text-change', function(delta, source) {
                         if (ngQuillService.lastEditorID !== editorID) {
                             ngQuillService.lastEditorID = editorID;
-                            $scope.$emit('editorChanged', editorID);
+                            $rootScope.$emit('editorChanged', editorID);
                         }
                         $log.debug("EDIT text change");
                         $rootScope.$emit('text-change', {
@@ -460,7 +460,7 @@
                         if (source === 'user' || angular.isUndefined(source)) {
                             if (ngQuillService.lastEditorID !== editorID) {
                                 ngQuillService.lastEditorID = editorID;
-                                $scope.$emit('editorChanged', editorID);
+                                $rootScope.$emit('editorChanged', editorID);
                             }
                             var update;
 
