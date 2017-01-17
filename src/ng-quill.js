@@ -204,7 +204,10 @@
                         }
                         editor.insertText(end, "");
 
-                        ngQuillService.lastEditorID = editorID;
+                        if (ngQuillService.lastEditorID !== editorID) {
+                            ngQuillService.lastEditorID = editorID;
+                            $scope.$emit('editorChanged', editorID);
+                        }
                     }
                     $scope.editorID = editorID;
                     ngQuillService.editors[editorID] = editor;
@@ -267,13 +270,13 @@
                         var bot = $window.innerHeight + $window.pageYOffset;
                         var height = bot - top;
                         var quort = height / 4;
-                        var gapToEditor = (height /100)*14.79;
+                        var gapToEditor = (height / 100) * 14.79;
                         return {
                             top: top,
                             bottom: bot,
                             height: height,
                             quort: quort,
-                            gap: gapToEditor    
+                            gap: gapToEditor
                         };
                     };
 
@@ -282,7 +285,7 @@
                         if (editorID === 0) {
                             element = document.getElementById("editorJumpFirstTop");
                         }
-                        var editorRect = element.getBoundingClientRect();    
+                        var editorRect = element.getBoundingClientRect();
                         $log.debug("SCROLL: top id rect ");
                         $log.debug(editorRect);
                         return editorRect.top;
@@ -290,7 +293,7 @@
 
                     $scope.bottomOfBanner = function() {
                         var element = document.getElementById("patient-banner");
-                        var editorRect = element.getBoundingClientRect();    
+                        var editorRect = element.getBoundingClientRect();
                         return editorRect.bottom;
                     };
 
@@ -306,11 +309,11 @@
                         var editorTop = $scope.topOfEditor();
                         var lines = $scope.lines(postion, allText, charPerLine);
 
-                        var absoluteFirstLine = (screenHeight.top + editorTop)+71;
-                        var scrollLine = lines.qty * lineHeight;    
-                            
+                        var absoluteFirstLine = (screenHeight.top + editorTop) + 71;
+                        var scrollLine = lines.qty * lineHeight;
+
                         var y = absoluteFirstLine + scrollLine - (lineHeight + $scope.bottomOfBanner());
-                        var yDisplay = y + (1*lineHeight);
+                        var yDisplay = y + (1 * lineHeight);
 
                         $log.debug("SCROLL: Screen height");
                         $log.debug(screenHeight);
@@ -321,12 +324,12 @@
                         $log.debug("SCROLL: scrollLine         - " + scrollLine);
                         $log.debug("SCROLL: to                 - " + y);
 
-                        if (yDisplay >= screenHeight.top && (yDisplay+ (15*lineHeight)) <= screenHeight.bottom) {
-                           $log.debug("SCROLL: No scroll as "+yDisplay+" is on screen (between "+screenHeight.top+" - "+screenHeight.bottom+")");
-                        } else {        
-                           var x = firstCharX + (lines.xPos * charWidth);
-                           $log.debug("SCROLL: To              - ("+x+","+y+") ");
-                           $window.scrollTo(x, y);
+                        if (yDisplay >= screenHeight.top && (yDisplay + (15 * lineHeight)) <= screenHeight.bottom) {
+                            $log.debug("SCROLL: No scroll as " + yDisplay + " is on screen (between " + screenHeight.top + " - " + screenHeight.bottom + ")");
+                        } else {
+                            var x = firstCharX + (lines.xPos * charWidth);
+                            $log.debug("SCROLL: To              - (" + x + "," + y + ") ");
+                            $window.scrollTo(x, y);
                         }
                         $log.debug("  ************************** ");
                     };
@@ -335,7 +338,10 @@
 
                     // Update model on textchange
                     editor.on('text-change', function(delta, source) {
-                        ngQuillService.lastEditorID = editorID;
+                        if (ngQuillService.lastEditorID !== editorID) {
+                            ngQuillService.lastEditorID = editorID;
+                            $scope.$emit('editorChanged', editorID);
+                        }
                         $log.debug("EDIT text change");
                         $rootScope.$emit('text-change', {
                             delta: delta,
@@ -452,7 +458,10 @@
                         $scope.scrollScreen(range.start, allText, charPerLine);
 
                         if (source === 'user' || angular.isUndefined(source)) {
-                            ngQuillService.lastEditorID = editorID;
+                            if (ngQuillService.lastEditorID !== editorID) {
+                                ngQuillService.lastEditorID = editorID;
+                                $scope.$emit('editorChanged', editorID);
+                            }
                             var update;
 
                             if (range.start === range.end) {
