@@ -450,9 +450,9 @@
 
                         if (range === null) {
                             $log.debug("No range for selection");
+                            range = {};    
                         }
 
-                        var allText = editor.container.outerText;
                         var allText = editor.container.outerText;
                         var charPerLine = editor.root.clientWidth / 11.25;
                         $scope.scrollScreen(range.start, allText, charPerLine);
