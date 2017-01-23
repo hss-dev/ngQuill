@@ -314,7 +314,7 @@
                         var y = absoluteFirstLine + scrollLine - (lineHeight + $scope.bottomOfBanner());
                         var yDisplay = y + (1 * lineHeight);
 
-                        $log.debug("SCROLL: Screen height");
+                        $log.debug("SCROLL: Screen height (editor "+editorID+").");
                         $log.debug(screenHeight);
                         $log.debug("SCROLL: lines");
                         $log.debug(lines);

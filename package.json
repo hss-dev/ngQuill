@@ -1,6 +1,6 @@
 {
   "name": "ngQuill",
-  "version": "1.0.7-101",
+  "version": "1.0.7-102",
   "description": "Angular directive for rich text editor Quill",
   "author": "Bnegt Weiße <bengtler@gmail.com>",
   "homepage": "https://github.com/KillerCodeMonkey/ngQuill",
