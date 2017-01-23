@@ -447,7 +447,8 @@
 
                         if (range === null) {
                             $log.debug("No range for selection");
-                            range = {};    
+                            $log.debug("Losted focus editor?: "+editorID);
+                            return;    
                         }
 
                         var allText = editor.container.outerText;
