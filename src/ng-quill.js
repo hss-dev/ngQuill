@@ -204,10 +204,9 @@
                         }
                         editor.insertText(end, "");
 
-                        if (ngQuillService.lastEditorID !== editorID) {
-                            ngQuillService.lastEditorID = editorID;
-                            $rootScope.$emit('editorChanged', editorID);
-                        }
+                        ngQuillService.lastEditorID = editorID;
+                        $rootScope.$emit('editorChanged', editorID);
+                        
                     }
                     $scope.editorID = editorID;
                     ngQuillService.editors[editorID] = editor;
@@ -338,10 +337,8 @@
 
                     // Update model on textchange
                     editor.on('text-change', function(delta, source) {
-                        if (ngQuillService.lastEditorID !== editorID) {
-                            ngQuillService.lastEditorID = editorID;
-                            $rootScope.$emit('editorChanged', editorID);
-                        }
+                        ngQuillService.lastEditorID = editorID;
+                        $rootScope.$emit('editorChanged', editorID);
                         $log.debug("EDIT text change");
                         $rootScope.$emit('text-change', {
                             delta: delta,
@@ -458,10 +455,7 @@
                         $scope.scrollScreen(range.start, allText, charPerLine);
 
                         if (source === 'user' || angular.isUndefined(source)) {
-                            if (ngQuillService.lastEditorID !== editorID) {
-                                ngQuillService.lastEditorID = editorID;
-                                $rootScope.$emit('editorChanged', editorID);
-                            }
+                            ngQuillService.lastEditorID = editorID;
                             var update;
 
                             if (range.start === range.end) {
