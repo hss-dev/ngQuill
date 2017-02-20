@@ -440,15 +440,16 @@
 
 
                     editor.on('selection-change', function(range, source) {
-                        if (!$rootScope.quillws) {
-                            $log.debug("No quill web socket, so swallowing selection change");
-                            return;
-                        }
-
                         if (range === null) {
                             $log.debug("No range for selection");
                             $log.debug("Losted focus editor?: "+editorID);
+                            $rootScope.$emit('focus-lost', editorID);
                             return;    
+                        }
+
+                        if (!$rootScope.quillws) {
+                            $log.debug("No quill web socket, so swallowing selection change");
+                            return;
                         }
 
                         var allText = editor.container.outerText;
