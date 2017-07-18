@@ -206,7 +206,7 @@
 
                         ngQuillService.lastEditorID = editorID;
                         $rootScope.$emit('editorChanged', editorID);
-                        
+
                     }
                     $scope.editorID = editorID;
                     ngQuillService.editors[editorID] = editor;
@@ -214,9 +214,11 @@
                     // add toolbar afterwards with a timeout to be sure that translations has replaced.
                     if ($scope.toolbar && $scope.toolbar === 'true') {
                         $timeout(function() {
-                            editor.addModule('toolbar', {
-                                container: element[0].querySelector('.advanced-wrapper .toolbar-container')
-                            });
+                            if (editor != null) {
+                                editor.addModule('toolbar', {
+                                    container: element[0].querySelector('.advanced-wrapper .toolbar-container')
+                                });
+                            }
                             $scope.toolbarCreated = true;
                         }, 0);
                     }
@@ -314,7 +316,7 @@
                         var y = absoluteFirstLine + scrollLine - (lineHeight + $scope.bottomOfBanner());
                         var yDisplay = y + (1 * lineHeight);
 
-                        $log.debug("SCROLL: Screen height (editor "+editorID+").");
+                        $log.debug("SCROLL: Screen height (editor " + editorID + ").");
                         $log.debug(screenHeight);
                         $log.debug("SCROLL: lines");
                         $log.debug(lines);
@@ -348,14 +350,16 @@
                         changed = true;
                         $timeout(function() {
                             // Calculate content length
-                            $scope.modelLength = editor.getLength();
+                            if (editor != null) {
+                                $scope.modelLength = editor.getLength();
+                            }
                             // Check if error class should be set
                             if (oldChange) {
                                 setClass();
                             }
                             // Set new model value
                             // Set new model value
-                            if (typeof ngModel !== 'undefined') {
+                            if (typeof ngModel !== 'undefined' && editor != null) {
                                 ngModel.$setViewValue(editor.getHTML());
                             }
 
@@ -442,9 +446,9 @@
                     editor.on('selection-change', function(range, source) {
                         if (range === null) {
                             $log.debug("No range for selection");
-                            $log.debug("Losted focus editor?: "+editorID);
+                            $log.debug("Losted focus editor?: " + editorID);
                             $rootScope.$emit('focus-lost', editorID);
-                            return;    
+                            return;
                         }
 
                         if (!$rootScope.quillws) {
