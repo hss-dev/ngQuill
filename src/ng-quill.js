@@ -241,28 +241,53 @@
                     $scope.regEx = /^([2-9]|[1-9][0-9]+)$/;
 
                     $scope.lines = function(insertAt, text, charPerLine) {
-                        var line = 0;
-                        var x = 0;
-                        var posOnLine = 0;
-                        while (x < text.length && x < insertAt) {
-                            var oneChar = text.substring(x, x + 1);
-                            var lines = oneChar.split(/\n/g);
-                            if (lines.length > 1) {
-                                line = line + 1;
-                                posOnLine = 0;
-                            } else {
-                                posOnLine = posOnLine + 1;
-                            }
-                            if (posOnLine > charPerLine) {
-                                posOnLine = 0;
-                                line = line + 1;
-                            }
-                            x = x + 1;
+			                  var helperCanvas = $window.document.querySelector('.helper-canvas');
+                        var context = helperCanvas.getContext('2d');
+
+                        var widthOfBox = editor.root.clientWidth;
+                        var i = 0;
+
+                        var from = 0;
+                        var to = 1;
+
+                        context.font = '18px gotham_light';
+
+                        while(to < text.length && to < insertAt) {
+                          var toPx = 0;
+
+                          while(toPx < widthOfBox && to < text.length && text.charAt(to) !== '\n') {
+                            to++;
+                            toPx = context.measureText(text.slice(from, to)).width;
+                          }
+
+                          from = to;
+                          to = from + 1;
+
+                          i++;
                         }
 
+                        // var line = 0;
+                        // var x = 0;
+                        // var posOnLine = 0;
+                        // while (x < text.length && x < insertAt) {
+                        //     var oneChar = text.substring(x, x + 1);
+                        //     var lines = oneChar.split(/\n/g);
+                        //     if (lines.length > 1) {
+                        //         line = line + 1;
+                        //         posOnLine = 0;
+                        //     } else {
+                        //         posOnLine = posOnLine + 1;
+                        //     }
+                        //     if (posOnLine > charPerLine) {
+                        //         posOnLine = 0;
+                        //         line = line + 1;
+                        //     }
+                        //     x = x + 1;
+                        // }
+
                         return {
-                            xPos: posOnLine,
-                            qty: line
+                            xPos: 0,
+                            qty: i
                         };
                     };
 
@@ -303,7 +328,7 @@
                     $scope.scrollScreen = function(postion, allText, charPerLine) {
                         $log.debug("  ========================== ");
                         var firstCharX = 36;
-                        var lineHeight = 20;
+                        var lineHeight = 28;
                         var charWidth = 12;
 
                         var screenHeight = $scope.getScreenHeight();
@@ -313,7 +338,7 @@
                         var absoluteFirstLine = (screenHeight.top + editorTop) + 71;
                         var scrollLine = lines.qty * lineHeight;
 
-                        var y = absoluteFirstLine + scrollLine - (lineHeight + $scope.bottomOfBanner());
+                        var y = absoluteFirstLine + scrollLine - (lineHeight + $scope.bottomOfBanner() + 50);
                         var yDisplay = y + (1 * lineHeight);
 
                         $log.debug("SCROLL: Screen height (editor " + editorID + ").");
