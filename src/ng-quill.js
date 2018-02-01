@@ -487,6 +487,7 @@
 
                         if (source === 'user' || angular.isUndefined(source)) {
                             ngQuillService.lastEditorID = editorID;
+                            $rootScope.$emit('focus-gain', editorID);
                             var update;
 
                             if (range.start === range.end) {
