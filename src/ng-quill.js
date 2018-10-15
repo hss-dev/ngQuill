@@ -338,7 +338,7 @@
                         var absoluteFirstLine = (screenHeight.top + editorTop) + 71;
                         var scrollLine = lines.qty * lineHeight;
 
-                        var y = absoluteFirstLine + scrollLine - (lineHeight + $scope.bottomOfBanner() + 50);
+                        var y = absoluteFirstLine + scrollLine - (lineHeight + $scope.bottomOfBanner() + 100);
                         var yDisplay = y + (1 * lineHeight);
 
                         $log.debug("SCROLL: Screen height (editor " + editorID + ").");
@@ -350,13 +350,14 @@
                         $log.debug("SCROLL: scrollLine         - " + scrollLine);
                         $log.debug("SCROLL: to                 - " + y);
 
-                        if (yDisplay >= screenHeight.top && (yDisplay + (15 * lineHeight)) <= screenHeight.bottom) {
-                            $log.debug("SCROLL: No scroll as " + yDisplay + " is on screen (between " + screenHeight.top + " - " + screenHeight.bottom + ")");
-                        } else {
+//                        if (yDisplay >= screenHeight.top && (yDisplay + (15 * lineHeight)) <= screenHeight.bottom) {
+//                            $log.debug("SCROLL: No scroll as " + yDisplay + " is on screen (between " + screenHeight.top + " - " + screenHeight.bottom + ")");
+//                        } else {
                             var x = firstCharX + (lines.xPos * charWidth);
                             $log.debug("SCROLL: To              - (" + x + "," + y + ") ");
+                            console.log("SCROLL: To              - (" + x + "," + y + ") ")
                             $window.scrollTo(x, y);
-                        }
+//                        }
                         $log.debug("  ************************** ");
                     };
 
@@ -483,7 +484,7 @@
 
                         var allText = editor.container.outerText;
                         var charPerLine = editor.root.clientWidth / 11.25;
-                        $scope.scrollScreen(range.start, allText, charPerLine);
+                        // $scope.scrollScreen(range.start, allText, charPerLine);
 
                         if (source === 'user' || angular.isUndefined(source)) {
                             ngQuillService.lastEditorID = editorID;
