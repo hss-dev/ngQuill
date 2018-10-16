@@ -355,7 +355,6 @@
 //                        } else {
                             var x = firstCharX + (lines.xPos * charWidth);
                             $log.debug("SCROLL: To              - (" + x + "," + y + ") ");
-                            console.log("SCROLL: To              - (" + x + "," + y + ") ")
                             $window.scrollTo(x, y);
 //                        }
                         $log.debug("  ************************** ");
@@ -484,7 +483,7 @@
 
                         var allText = editor.container.outerText;
                         var charPerLine = editor.root.clientWidth / 11.25;
-                        // $scope.scrollScreen(range.start, allText, charPerLine);
+                        $scope.scrollScreen(range.start, allText, charPerLine);
 
                         if (source === 'user' || angular.isUndefined(source)) {
                             ngQuillService.lastEditorID = editorID;
