@@ -483,7 +483,9 @@
 
                         var allText = editor.container.outerText;
                         var charPerLine = editor.root.clientWidth / 11.25;
-                        $scope.scrollScreen(range.start, allText, charPerLine);
+                        if(source === undefined || source === "api"){
+                           $scope.scrollScreen(range.start, allText, charPerLine);
+                        }
 
                         if (source === 'user' || angular.isUndefined(source)) {
                             ngQuillService.lastEditorID = editorID;
