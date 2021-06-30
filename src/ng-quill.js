@@ -326,6 +326,10 @@
 
 
                     $scope.scrollScreen = function(postion, allText, charPerLine) {
+                        if (ngQuillService.scrollScreen != null){
+                            ngQuillService.scrollScreen(postion, allText, charPerLine);
+                            return;
+                        }
                         $log.debug("  ========================== ");
                         var firstCharX = 36;
                         var lineHeight = 28;
